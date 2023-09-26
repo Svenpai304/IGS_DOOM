@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
-{
-    public static GameManager instance;
-
+{ 
     public delegate void Action();
-    public Action GlobalUpdate;
+    public static Action GlobalUpdate;
 
-    private void Awake()
-    {
-        if (instance != null) { instance = this; }
+    private void Start()
+    {       
+        var a = new InputManager();
     }
 
     private void Update()
