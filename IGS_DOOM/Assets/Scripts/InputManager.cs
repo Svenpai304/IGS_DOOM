@@ -3,15 +3,26 @@ using System.Collections.Generic;
 using DefaultNamespace;
 using UnityEngine;
 
-public class InputManager : ICommand
+public class KeyCommand
 {
-    private ICommand inputCommand;
+    public KeyCode Key;
+    public ICommand Command;
+}
+
+public class InputManager
+{
+    private List<KeyCommand> keyCommands;
 
     public InputManager()
     {
         GameManager.GlobalUpdate += Update;
     }
-    
+
+    public void BindInput(KeyCode _key, ICommand _command)
+    {
+        keyCommands.Add(new KeyCommand(){Key = _key, Command = _command});        
+    }
+
     private void Update()
     {
         Debug.Log("TestLog");
