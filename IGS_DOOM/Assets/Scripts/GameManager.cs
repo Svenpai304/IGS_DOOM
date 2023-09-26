@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,15 +6,29 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 { 
     public delegate void Action();
+    public static Action GlobalAwake;
+    public static Action GlobalStart;
     public static Action GlobalUpdate;
+    public static Action GlobalFixedUpdate;
+
+    private void Awake()
+    {
+        var a = new Player();
+        GlobalAwake?.Invoke();
+    }
 
     private void Start()
-    {       
-        var a = new InputManager();
+    {
+        GlobalStart?.Invoke();
     }
 
     private void Update()
     {
         GlobalUpdate?.Invoke();
+    }
+
+    private void FixedUpdate()
+    {
+        GlobalFixedUpdate?.Invoke();
     }
 }
