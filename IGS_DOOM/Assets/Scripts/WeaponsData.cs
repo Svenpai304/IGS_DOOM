@@ -1,12 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class WeaponsData
+public class WeaponsData : ScriptableObject
 {
-    public static List<IWeapon> Weapons = new List<IWeapon>();
+    public List<Weapon> Weapons = new List<Weapon>();
 }
 
+[Serializable]
 public class WeaponData
 {
     public int Ammo;

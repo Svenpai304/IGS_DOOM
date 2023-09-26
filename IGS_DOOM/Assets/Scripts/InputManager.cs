@@ -25,6 +25,6 @@ public class InputManager
 
     private void Update()
     {
-        Debug.Log("TestLog");
+
     }
 }
