@@ -6,12 +6,7 @@ public class Projectile
 {
     public Projectile()
     {
-        GameManager.instance.GlobalUpdate += Update;
-    }
-
-    ~Projectile() 
-    {
-        GameManager.instance.GlobalUpdate -= Update;
+        GameManager.GlobalUpdate += Update;
     }
 
     private void Update()
