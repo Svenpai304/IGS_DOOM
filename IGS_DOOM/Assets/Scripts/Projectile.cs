@@ -9,6 +9,11 @@ public class Projectile
         GameManager.instance.GlobalUpdate += Update;
     }
 
+    ~Projectile() 
+    {
+        GameManager.instance.GlobalUpdate -= Update;
+    }
+
     private void Update()
     {
 
