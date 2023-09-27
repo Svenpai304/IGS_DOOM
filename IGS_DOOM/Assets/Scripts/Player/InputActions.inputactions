@@ -34,21 +34,21 @@
                 },
                 {
                     "name": "Walk",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "d3aa08f1-4087-4895-9f05-61e0ba6096a1",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Crouch",
-                    "type": "Value",
+                    "type": "Button",
                     "id": "6382c029-b5af-42c9-b1a9-65d22512cdd5",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Melee",

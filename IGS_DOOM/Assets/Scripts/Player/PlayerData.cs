@@ -7,16 +7,21 @@ namespace Player
     {
         public GameObject Player;
         public LayerMask tGroundLayer;
-        public string testString;
+        public GameObject Camera;
 
         public GameObject InstantiatePlayer()
         {
             return Instantiate(Player);
         }
 
-        public LayerMask GroundLayer()
+        public GameObject CreateCamera()
         {
-            return tGroundLayer;
+            return Instantiate(Camera);
+        }
+
+        public int GroundLayer()
+        {
+            return LayerMask.GetMask(tGroundLayer.ToString());
         }
     }
 }

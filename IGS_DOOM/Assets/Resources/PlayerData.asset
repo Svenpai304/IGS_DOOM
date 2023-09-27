@@ -16,4 +16,4 @@ MonoBehaviour:
   tGroundLayer:
     serializedVersion: 2
     m_Bits: 256
-  testString: 
+  Camera: {fileID: 6213602980868173989, guid: 90dcfea5972c85449853aa2d4ade2143, type: 3}

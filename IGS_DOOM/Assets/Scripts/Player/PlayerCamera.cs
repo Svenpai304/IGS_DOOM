@@ -5,17 +5,19 @@ namespace Player
 {
     public class PlayerCamera
     {
-        private Camera camera;
+        private GameObject camera;
         private GameObject player;
+        private Transform camHolder;
 
         private Vector2 sens = new (200, 200);
         private Vector2 rotation;
 
-        public PlayerCamera(GameObject _player)
+        public PlayerCamera(GameObject _player, GameObject _camObj)
         {
             player = _player;
-            camera = player.GetComponentInChildren<Camera>();
-
+            camera = _camObj;
+            camHolder = player.transform.Find("CamHolder");
+            
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -30,8 +32,10 @@ namespace Player
             rotation.x = Math.Clamp(rotation.x, -90f, 90f);
             
             // rotate cam and player
-            camera.transform.localRotation = Quaternion.Euler(rotation.x, 0 ,0);
+            camera.transform.localRotation = Quaternion.Euler(rotation);
             player.transform.rotation = Quaternion.Euler(0, rotation.y, 0);
+            
+            camera.transform.position = camHolder.transform.position;
         }
     }
 }
