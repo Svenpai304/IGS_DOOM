@@ -221,7 +221,7 @@
                 {
                     "name": "",
                     "id": "50fadc8b-6df6-4b64-bd80-34d8e9415162",
-                    "path": "<Mouse>/position",
+                    "path": "<Mouse>/delta",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

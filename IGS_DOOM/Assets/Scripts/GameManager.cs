@@ -10,15 +10,27 @@ public class GameManager : MonoBehaviour
     public static Action GlobalStart;
     public static Action GlobalUpdate;
     public static Action GlobalFixedUpdate;
+    public static Action GlobalOnEnable;
+    public static Action GlobalOnDisable;
 
     private void Awake()
     {
-        var a = new Player();
+        var a = new Player.Player();
         var b = new WeaponCarrier();
         GlobalAwake?.Invoke();
     }
 
     private WeaponCarrier weapons;
+
+    private void OnEnable()
+    {
+        GlobalOnEnable?.Invoke();
+    }
+    
+    private void OnDisable()
+    {
+        GlobalOnDisable?.Invoke();
+    }
 
     private void Start()
     {
