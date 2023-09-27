@@ -12,14 +12,17 @@ using UnityEngine;
         //private PlayerData playerData;
         private GameObject playerObject;
         private Rigidbody rb;
-        private CapsuleCollider collider;
         private PlayerCamera cam;
 
         private Transform orientation;
         private Vector3 moveDirection;
 
-        private Vector2 mouseInput; 
-    
+        private Vector2 mouseInput;
+        private Vector2 moveInput;
+        private bool grounded;
+        private LayerMask groundLayer;
+
+        private float moveSpeed = 4;
         public Player()
         {
             Debug.Log("Player Created");
@@ -32,7 +35,8 @@ using UnityEngine;
             
             // Load player Data from scriptable object
             var playerData = Resources.Load<PlayerData>("PlayerData");
-            Debug.Log(playerData);
+            groundLayer = playerData.GroundLayer();
+            Debug.Log(playerData.testString);
             // Instantiate player objects
             playerObject = playerData.InstantiatePlayer();
             cam = new PlayerCamera(playerObject);
@@ -40,19 +44,17 @@ using UnityEngine;
 
         private void Awake()
         {
-            Debug.Log("Player Awake");
             rb = playerObject.GetComponent<Rigidbody>();
-            collider = playerObject.GetComponent<CapsuleCollider>();
-            
             rb.freezeRotation = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-            
-            
+
             input = new InputActions();
 
             input.Player.MouseXY.performed += SetMouse;
             input.Player.MouseXY.canceled += SetMouse;
+            input.Player.Movement.performed += MoveInput;
+            input.Player.Movement.canceled += MoveInput;
         }
 
         private void OnEnable()
@@ -67,30 +69,33 @@ using UnityEngine;
 
         private void Start()
         {
-            Debug.Log("Player Start");
+            
         }
 
         private void Update()
         {
-            Debug.Log("Player Update");
+            var position = playerObject.transform.position;
+            grounded = Physics.Raycast(position, Vector3.down, 2f * 0.5f + .1f, LayerMask.GetMask("Ground"));
+            Debug.DrawRay(position, Vector3.down * (2f * 0.5f + 0.1f), Color.green);
+            Debug.Log(grounded);
             cam.UpdateCamera(mouseInput);
         }
 
         private void FixedUpdate()
         {
-            Debug.Log("Player FixedUpdate");
+            moveDirection = playerObject.transform.forward * moveInput.y + playerObject.transform.right * moveInput.x;
             
+            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
         }
 
         private void SetMouse(InputAction.CallbackContext value)
         {
             mouseInput = value.ReadValue<Vector2>();
-            Debug.Log(mouseInput);
         }
 
-        private void MovePlayer(InputAction.CallbackContext value)
+        private void MoveInput(InputAction.CallbackContext value)
         {
-        
+            moveInput = value.ReadValue<Vector2>();
         }
     }
 }

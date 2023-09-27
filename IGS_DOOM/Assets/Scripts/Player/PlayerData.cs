@@ -6,10 +6,17 @@ namespace Player
     public class PlayerData : ScriptableObject
     {
         public GameObject Player;
+        public LayerMask tGroundLayer;
+        public string testString;
 
         public GameObject InstantiatePlayer()
         {
             return Instantiate(Player);
+        }
+
+        public LayerMask GroundLayer()
+        {
+            return tGroundLayer;
         }
     }
 }
