@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 namespace FSM
 { 
     public abstract class BaseState
@@ -11,7 +7,7 @@ namespace FSM
         public void OnStateEnter(StateController _sc)
         {
             sc = _sc;
-            OnEnter(_sc);
+            OnEnter();
         }
         
         public void OnStateUpdate() { OnUpdate(); }
@@ -20,7 +16,7 @@ namespace FSM
         
         public void OnStateExit() { OnExit(); }
         
-        protected virtual void OnEnter(StateController _sc) {}
+        protected virtual void OnEnter() {}
         protected virtual void OnUpdate() {}
         protected virtual void OnFixedUpdate() {}
         protected virtual void OnExit() {}

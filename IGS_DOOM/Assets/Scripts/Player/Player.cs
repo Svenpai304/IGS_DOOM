@@ -24,15 +24,27 @@ namespace Player
         private bool grounded;
         private LayerMask groundLayer;
 
-        private float moveSpeed = 7f;
+        private float maxSlopeAngle = 50;
+        private RaycastHit slopeHit;
+
+        private float currentMoveSpeed = 7;
+        private float walkSpeed = 5;
+        private float runSpeed = 7;
+        private float crouchSpeed = 6;
+
+        private float crouchYScale = .5f;
+        private float startYScale;
+        
         private float groundDrag = 5f;
         private float airDrag = 2f;
+        
         private float playerHeight = 2f;
 
         private float jumpForce = 8f;
         private float jumpCoolDown;
         private float airMultiplier = .4f;
         private bool readyToJump;
+        private bool exetingSlope;
 
         public Player()
         {
@@ -70,8 +82,12 @@ namespace Player
             input.Player.Movement.started += MoveInput;
             input.Player.Movement.performed += MoveInput;
             input.Player.Movement.canceled += MoveInput;
+            input.Player.Crouch.started += Crouch;
+            input.Player.Crouch.canceled += Crouch;
             input.Player.Jump.started += Jump;
             input.Player.Jump.performed += Jump;
+
+            startYScale = playerObject.transform.localScale.y;
         }
 
         private void OnEnable()
@@ -93,10 +109,14 @@ namespace Player
         {
             var position = playerObject.transform.position;
             grounded = Physics.Raycast(position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
+            SpeedControl();
+            
+            Debug.Log(OnSlope());
 
             if (grounded) { rb.drag = groundDrag; }
             else { rb.drag = airDrag; }
-
+            
+            
             cam.UpdateCamera(mouseInput);
         }
 
@@ -109,20 +129,42 @@ namespace Player
         {
             moveDirection = playerObject.transform.forward * moveInput.y + playerObject.transform.right * moveInput.x;
 
+            if (OnSlope())
+            {
+                rb.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
+
+                if (rb.velocity.y > 0)
+                {
+                    rb.AddForce(Vector3.down * 80, ForceMode.Force);
+                }
+            }
+            
             if (grounded)
-                rb.AddForce(moveDirection.normalized * (moveSpeed * 10f), ForceMode.Force);
+                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
             else if (!grounded)
-                rb.AddForce(moveDirection.normalized * (moveSpeed * 10f * airMultiplier), ForceMode.Force);
+                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
+
+            rb.useGravity = !OnSlope();
         }
 
         private void SpeedControl()
         {
-            Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-            if (flatVel.magnitude > moveSpeed)
+            if (OnSlope() && !exetingSlope)
             {
-                Vector3 limitedVel = flatVel.normalized * moveSpeed;
-                rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+                if (rb.velocity.magnitude > currentMoveSpeed)
+                {
+                    rb.velocity = rb.velocity.normalized * currentMoveSpeed;
+                }
+            }
+            else
+            {
+                Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                if (flatVel.magnitude > currentMoveSpeed)
+                {
+                    Vector3 limitedVel = flatVel.normalized * currentMoveSpeed;
+                    rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+                }
             }
         }
 
@@ -147,8 +189,45 @@ namespace Player
             ResetJump();
         }
 
+        private void Crouch(InputAction.CallbackContext value)
+        {
+            if (value.ReadValueAsButton())
+            {
+                            
+                var scale = playerObject.transform.localScale;
+                scale = new Vector3(scale.x, crouchYScale, scale.z);
+                playerObject.transform.localScale = scale;
+            
+                rb.AddForce(Vector3.down, ForceMode.Impulse);
+            }
+            else
+            {
+                var scale = playerObject.transform.localScale;
+                scale = new Vector3(scale.x, startYScale, scale.z);
+                playerObject.transform.localScale = scale;
+            }
+        }
+
+        private bool OnSlope()
+        {
+            if (Physics.Raycast(playerObject.transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + .3f))
+            {
+                float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+                return angle < maxSlopeAngle && angle != 0;
+            }
+
+            return false;
+        }
+
+        private Vector3 GetSlopeMovementDirection()
+        {
+            return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal);
+        }
+
         private void PerformJump()
         {
+            exetingSlope = true;
+            
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
@@ -158,6 +237,8 @@ namespace Player
             if (grounded)
             {
                 readyToJump = true;
+                
+                exetingSlope = false;
             }
         }
     }
