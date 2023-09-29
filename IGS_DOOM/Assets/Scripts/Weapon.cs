@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,9 +13,32 @@ public class Weapon : ScriptableObject, IWeapon
     public GameObject ViewmodelPrefab { get => viewmodelPrefab; set => viewmodelPrefab = value; }
     private GameObject activeViewmodel;
 
-    public void Fire()
+    [SerializeField] public FireBehaviour primaryFire;
+    [SerializeField] public FireBehaviour altFire1;
+    [SerializeField] public FireBehaviour altFire2;
+
+    private Action<Weapon> OnFirePressed;
+    private Action<Weapon> OnFireReleased;
+    private Action<Weapon> OnAltFirePressed;
+    private Action<Weapon> OnAltFireReleased;
+    public void FirePressed()
     {
-        throw new System.NotImplementedException();
+        OnFirePressed?.Invoke(this);
+    }
+
+    public void FireReleased()
+    {
+        OnFireReleased?.Invoke(this);
+    }
+
+    public void AltFirePressed()
+    {
+        OnAltFirePressed?.Invoke(this);
+    }
+
+    public void AltFireReleased()
+    {
+        OnAltFireReleased?.Invoke(this);
     }
 
     public void OnSwitchIn()
@@ -31,4 +55,5 @@ public class Weapon : ScriptableObject, IWeapon
     {
         throw new System.NotImplementedException();
     }
+
 }

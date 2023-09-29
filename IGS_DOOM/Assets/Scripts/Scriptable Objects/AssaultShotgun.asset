@@ -13,8 +13,17 @@ MonoBehaviour:
   m_Name: AssaultShotgun
   m_EditorClassIdentifier: 
   data:
+    MaxAmmo: 32
     Ammo: 0
     Unlocked: 1
     Mod1Unlocked: 0
     Mod2Unlocked: 0
+    Mod1Upgrade1Level: 0
+    Mod1Upgrade2Level: 0
+    Mod1Upgrade3Level: 0
+    Mod1MasteryUnlocked: 0
+    Mod2Upgrade1Level: 0
+    Mod2Upgrade2Level: 0
+    Mod2Upgrade3Level: 0
+    Mod2MasteryUnlocked: 0
   viewmodelPrefab: {fileID: 4990422170186922594, guid: a91bd2f3e53bc8c4a95975828da98d97, type: 3}
