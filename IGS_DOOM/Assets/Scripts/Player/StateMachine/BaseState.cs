@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace FSM
 { 
     public abstract class BaseState
@@ -16,6 +18,7 @@ namespace FSM
         
         public void OnStateExit() { OnExit(); }
         
+        // Virtual functions that are overridden by the base class
         protected virtual void OnEnter() {}
         protected virtual void OnUpdate() {}
         protected virtual void OnFixedUpdate() {}

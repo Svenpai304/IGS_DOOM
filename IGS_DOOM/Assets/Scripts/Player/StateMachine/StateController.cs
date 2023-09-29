@@ -1,26 +1,44 @@
-﻿namespace FSM
+﻿using UnityEngine;
+
+namespace FSM
 {
     public class StateController
     {
-        private BaseState currentState;
-        private GroundedState groundedState = new GroundedState();
+        public BaseState currentState;
+
+        // State Definitions
+        public GroundedState GroundedState = new();
+        public IdleState IdleState = new();
+        public WalkState WalkState = new();
+        public RunState RunState = new ();
+        public CrouchState CrouchState = new();
+        public JumpState JumpState = new();
         
-        void Start()
+        public InAirState InAirState = new();
+        public InAIrJumpState InAIrJumpState = new();
+        public LedgeGrabState LedgeGrabState = new();
+        
+        
+        public Player.Player player;
+        
+        public StateController(Player.Player _player)
         {
-            ChangeState(groundedState);
+            player = _player;
+            ChangeState(GroundedState);
         }
 
-        void Update()
+        public void Update()
         {
+            Debug.Log(currentState);
             currentState?.OnStateUpdate();
         }
 
-        void FixedUpdate()
+        public void FixedUpdate()
         {
             currentState?.OnStateFixedUpdate();
         }
 
-        void ChangeState(BaseState _newState)
+        public void ChangeState(BaseState _newState)
         {
             currentState?.OnStateExit();
 

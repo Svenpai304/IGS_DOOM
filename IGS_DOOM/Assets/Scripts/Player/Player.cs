@@ -1,15 +1,19 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
+using FSM;
 
 namespace Player
 {
     public class Player
     {
+        private StateController stateController;
         private InputActions input;
 
         //private PlayerData playerData;
         private GameObject playerObject;
-        private Rigidbody rb;
+        private Transform pTransform;
+        
+        public Rigidbody rb;
         private PlayerCamera cam;
 
         private Transform orientation;
@@ -21,31 +25,41 @@ namespace Player
         private PlayerData playerData;
         public PlayerData PlayerData => playerData;
         private Vector2 moveInput;
-        private bool grounded;
+        public bool isGrounded;
         private LayerMask groundLayer;
 
-        private float maxSlopeAngle = 50;
+
         private RaycastHit slopeHit;
 
         private float currentMoveSpeed = 7;
+
+
+
+        private float startYScale;
+        
+
+        
+        // can initialize from constructor
+        private float playerHeight = 2f;
+
+
+        private float jumpCoolDown;
+        private bool readyToJump;
+        private bool exitingSlope;
+        
+        
+        // PlayerMovement variables (changable)
+
+        private float airMultiplier = .4f;
+        private float jumpForce = 8f;
+        private float groundDrag = 5f;
+        private float airDrag = 2f;
+        private float crouchYScale = .5f;
         private float walkSpeed = 5;
         private float runSpeed = 7;
         private float crouchSpeed = 6;
-
-        private float crouchYScale = .5f;
-        private float startYScale;
+        private float maxSlopeAngle = 60;
         
-        private float groundDrag = 5f;
-        private float airDrag = 2f;
-        
-        private float playerHeight = 2f;
-
-        private float jumpForce = 8f;
-        private float jumpCoolDown;
-        private float airMultiplier = .4f;
-        private bool readyToJump;
-        private bool exetingSlope;
-
         public Player()
         {
             Debug.Log("Player Created");
@@ -55,6 +69,8 @@ namespace Player
             GameManager.GlobalFixedUpdate += FixedUpdate;
             GameManager.GlobalOnEnable += OnEnable;
             GameManager.GlobalOnDisable += OnDisable;
+
+            stateController = new StateController(this);  
             
             // Load player Data from scriptable object
             playerData = Resources.Load<PlayerData>("PlayerData");
@@ -63,6 +79,8 @@ namespace Player
             // Instantiate player objects
             playerObject = playerData.InstantiatePlayer();
             orientation = playerObject.transform.Find("Orientation");
+            
+            pTransform = playerObject.transform;
             
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
@@ -107,29 +125,27 @@ namespace Player
 
         private void Update()
         {
-            var position = playerObject.transform.position;
-            grounded = Physics.Raycast(position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
+            isGrounded = Physics.Raycast(pTransform.position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
+            
+            
+            stateController.Update();
             SpeedControl();
-            
-            Debug.Log(OnSlope());
-
-            if (grounded) { rb.drag = groundDrag; }
-            else { rb.drag = airDrag; }
-            
-            
             cam.UpdateCamera(mouseInput);
+
+            if (isGrounded) { rb.drag = groundDrag; }
+            else { rb.drag = airDrag; }
         }
 
         private void FixedUpdate()
         {
-            PlayerMove();
+            stateController.FixedUpdate();
         }
 
-        private void PlayerMove()
+        public void PlayerMove()
         {
             moveDirection = playerObject.transform.forward * moveInput.y + playerObject.transform.right * moveInput.x;
 
-            if (OnSlope())
+            if (OnSlope() && !exitingSlope)
             {
                 rb.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
 
@@ -139,9 +155,9 @@ namespace Player
                 }
             }
             
-            if (grounded)
+            if (isGrounded)
                 rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
-            else if (!grounded)
+            else if (!isGrounded)
                 rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
 
             rb.useGravity = !OnSlope();
@@ -149,7 +165,7 @@ namespace Player
 
         private void SpeedControl()
         {
-            if (OnSlope() && !exetingSlope)
+            if (OnSlope() && !exitingSlope)
             {
                 if (rb.velocity.magnitude > currentMoveSpeed)
                 {
@@ -181,7 +197,7 @@ namespace Player
         private void Jump(InputAction.CallbackContext value)
         {
             readyToJump = false;
-            if (grounded)
+            if (isGrounded)
             {
                 PerformJump();
             }
@@ -193,18 +209,13 @@ namespace Player
         {
             if (value.ReadValueAsButton())
             {
-                            
-                var scale = playerObject.transform.localScale;
-                scale = new Vector3(scale.x, crouchYScale, scale.z);
-                playerObject.transform.localScale = scale;
+                pTransform.localScale = new Vector3(pTransform.localScale.x, crouchYScale, pTransform.localScale.z);
             
                 rb.AddForce(Vector3.down, ForceMode.Impulse);
             }
             else
             {
-                var scale = playerObject.transform.localScale;
-                scale = new Vector3(scale.x, startYScale, scale.z);
-                playerObject.transform.localScale = scale;
+                pTransform.localScale = new Vector3(pTransform.localScale.x, startYScale, pTransform.localScale.z);
             }
         }
 
@@ -221,12 +232,12 @@ namespace Player
 
         private Vector3 GetSlopeMovementDirection()
         {
-            return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal);
+            return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
         }
 
         private void PerformJump()
         {
-            exetingSlope = true;
+            exitingSlope = true;
             
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -234,11 +245,11 @@ namespace Player
 
         private void ResetJump()
         {
-            if (grounded)
+            if (isGrounded)
             {
                 readyToJump = true;
                 
-                exetingSlope = false;
+                exitingSlope = false;
             }
         }
     }
