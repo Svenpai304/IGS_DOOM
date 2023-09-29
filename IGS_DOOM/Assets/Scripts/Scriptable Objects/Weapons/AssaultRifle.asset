@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 028146ed6553f754db22d6648d5fa3e9, type: 3}
+  m_Name: AssaultRifle
+  m_EditorClassIdentifier: 
+  data:
+    MaxAmmo: 0
+    Ammo: 0
+    CurrentMod: {fileID: 0}
+    Unlocked: 0
+    Mod1Unlocked: 0
+    Mod2Unlocked: 0
+    Mod1Upgrade1Level: 0
+    Mod1Upgrade2Level: 0
+    Mod1Upgrade3Level: 0
+    Mod1MasteryUnlocked: 0
+    Mod2Upgrade1Level: 0
+    Mod2Upgrade2Level: 0
+    Mod2Upgrade3Level: 0
+    Mod2MasteryUnlocked: 0
+  viewmodelPrefab: {fileID: 0}
+  primaryFire: {fileID: 11400000, guid: 058b6847fc7acd94a858595592ea0c18, type: 2}
+  altFire1: {fileID: 0}
+  altFire2: {fileID: 0}

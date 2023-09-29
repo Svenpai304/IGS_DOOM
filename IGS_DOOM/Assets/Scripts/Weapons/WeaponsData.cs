@@ -14,12 +14,11 @@ public class WeaponData
     public int MaxAmmo;
     public int Ammo;
 
-    public FireBehaviour CurrentMod;
+    [HideInInspector] public int CurrentMod;
 
     public bool Unlocked;
 
-    public bool Mod1Unlocked;
-    public bool Mod2Unlocked;
+    public bool[] ModsUnlocked;
 
     public int Mod1Upgrade1Level;
     public int Mod1Upgrade2Level;

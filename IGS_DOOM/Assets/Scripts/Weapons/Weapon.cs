@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.PlasticSCM.Editor.WebApi;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BaseWeapon", menuName = "Weapon", order = 1)]
@@ -14,13 +15,13 @@ public class Weapon : ScriptableObject, IWeapon
     private GameObject activeViewmodel;
 
     [SerializeField] public FireBehaviour primaryFire;
-    [SerializeField] public FireBehaviour altFire1;
-    [SerializeField] public FireBehaviour altFire2;
+    [SerializeField] public FireBehaviour[] altFires;
 
-    private Action<Weapon> OnFirePressed;
-    private Action<Weapon> OnFireReleased;
-    private Action<Weapon> OnAltFirePressed;
-    private Action<Weapon> OnAltFireReleased;
+    public delegate void WeaponAction(Weapon _weapon);
+    public WeaponAction OnFirePressed;
+    public WeaponAction OnFireReleased;
+    public WeaponAction OnAltFirePressed;
+    public WeaponAction OnAltFireReleased;
     public void FirePressed()
     {
         OnFirePressed?.Invoke(this);
@@ -44,16 +45,36 @@ public class Weapon : ScriptableObject, IWeapon
     public void OnSwitchIn()
     {
         activeViewmodel = Instantiate(ViewmodelPrefab);
+        primaryFire.OnSwitchIn(this);
+        if (Data.CurrentMod != 0)
+        {
+            altFires[Data.CurrentMod - 1].OnSwitchIn(this);
+        }
     }
 
     public void OnSwitchOut()
     {
         Destroy(activeViewmodel);
+        primaryFire.OnSwitchOut(this);
+        if (Data.CurrentMod != 0)
+        {
+            altFires[Data.CurrentMod - 1].OnSwitchOut(this);
+        }
     }
 
     public void SwitchMod()
     {
-        throw new System.NotImplementedException();
+        int newMod = Data.CurrentMod + 1;
+        if( newMod > 2 )
+        {
+            newMod = 1;
+        }
+        if (Data.CurrentMod != 0)
+        {
+            altFires[Data.CurrentMod - 1].OnSwitchOut(this);
+        }
+        Data.CurrentMod = newMod;
+        altFires[Data.CurrentMod - 1].OnSwitchIn(this);
     }
 
 }
