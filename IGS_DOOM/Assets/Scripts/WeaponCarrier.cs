@@ -23,11 +23,6 @@ public class WeaponCarrier
         SwitchWeapon(0);
     }
 
-    public void Fire()
-    {
-        CurrentWeapon.Fire();
-    }
-
     public void SwitchWeapon(int i)
     {
         CurrentWeapon = Weapons[i];

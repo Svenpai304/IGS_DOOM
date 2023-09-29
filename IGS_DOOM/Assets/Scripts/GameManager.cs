@@ -18,8 +18,6 @@ public class GameManager : MonoBehaviour
         GlobalAwake?.Invoke();
     }
 
-    private WeaponCarrier weapons;
-
     private void Start()
     {
         GlobalStart?.Invoke();
