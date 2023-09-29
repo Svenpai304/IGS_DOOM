@@ -180,7 +180,7 @@ namespace Player
                 Debug.DrawRay(downRay, Vector3.down, Color.green);
                 if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, groundLayer))  //Physics.Raycast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
                 {
-                    GameManager.instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .1f));
+                    GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .1f));
                     
                  
                     Debug.Log(capsuleHit.collider);
