@@ -4,6 +4,6 @@ using UnityEngine;
 
 public abstract class FireComponent : ScriptableObject
 {
-    public abstract void OnSwitchIn(Weapon weapon);
-    public abstract void OnSwitchOut(Weapon weapon);
+    [SerializeField] private int ammoCost;
+    public abstract void Fire(Weapon _weapon);
 }
