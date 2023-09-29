@@ -16,7 +16,7 @@ namespace FSM
             
             // if can InAirJump > switch to jump state
             // otherwise stay in this InAirState
-            Debug.Log("InAirStateUpdate");
+            //Debug.Log("InAirStateUpdate");
             if (sc.player.isGrounded)
             {
                 sc.ChangeState(sc.GroundedState);

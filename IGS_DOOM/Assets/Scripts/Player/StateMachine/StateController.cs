@@ -29,7 +29,7 @@ namespace FSM
 
         public void Update()
         {
-            Debug.Log(currentState);
+            //Debug.Log(currentState);
             currentState?.OnStateUpdate();
         }
 

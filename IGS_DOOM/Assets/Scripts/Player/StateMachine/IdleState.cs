@@ -12,7 +12,7 @@ namespace FSM
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            Debug.Log("IdleStateUpdate");
+            //Debug.Log("IdleStateUpdate");
             if (sc.player.rb.velocity.magnitude > .1f)
             {
                 sc.ChangeState(sc.RunState);

@@ -11,7 +11,7 @@ namespace FSM
 
         protected override void OnUpdate()
         {
-            Debug.Log("GroundedStateUpdate");
+            //Debug.Log("GroundedStateUpdate");
             // CheckSwitch states
             if (!sc.player.isGrounded)
             {

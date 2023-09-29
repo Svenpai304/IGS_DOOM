@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using FSM;
+using Unity.VisualScripting;
 
 namespace Player
 {
@@ -29,6 +30,7 @@ namespace Player
         private Transform pTransform;
         
         public Rigidbody rb;
+        private CapsuleCollider pCollider;
         private PlayerCamera cam;
 
         private Transform orientation;
@@ -51,6 +53,7 @@ namespace Player
 
 
         private float startYScale;
+        private float playerRadius;
         
 
         
@@ -95,6 +98,7 @@ namespace Player
             playerObject = playerData.InstantiatePlayer();
             orientation = playerObject.transform.Find("Orientation");
             rb = playerObject.GetComponent<Rigidbody>();
+            pCollider = playerObject.GetComponentInChildren<CapsuleCollider>();
             //pmc = new PlayerMovementComponent(rb);
             pTransform = playerObject.transform;
             
@@ -122,6 +126,7 @@ namespace Player
             input.Player.Jump.performed += Jump;
 
             startYScale = playerObject.transform.localScale.y;
+            playerRadius = pCollider.radius;
         }
 
         private void OnEnable()
@@ -141,22 +146,25 @@ namespace Player
 
         private void Update()
         {
-            RaycastHit groundHit;
-            isGrounded = Physics.SphereCast(pTransform.position, .5f, Vector3.down, out groundHit, .5f, groundLayer); //2f * 0.5f + .1f, groundLayer);
-            cam.UpdateCamera(mouseInput);
+            // Grounded check
+            // done with CheckCapsule because raycast was very buggy on a little uneven terrain
+            Vector3 groundStart = pCollider.bounds.center;
+            Vector3 groundEnd = new(pCollider.bounds.center.x, pCollider.bounds.min.y - 0.1f, pCollider.bounds.center.z);
+            isGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, groundLayer);
+            Debug.Log(isGrounded);
             
+            cam.UpdateCamera(mouseInput);
             
             stateController.Update();
 
             SpeedControl();
 
+            // MOVE THIS TO A STATE PLS
             LedgeGrab();
             
-
             if (isGrounded) { rb.drag = groundDrag; }
             else { rb.drag = airDrag; }
         }
-
         private void LedgeGrab()
         {
             RaycastHit wallHit;
@@ -165,7 +173,7 @@ namespace Player
             // Check for wall
             if (Physics.Raycast(pTransform.position + Vector3.up, orientation.forward, out wallHit, 1f, groundLayer))
             {
-                Debug.Log(wallHit.collider);
+                //Debug.Log(wallHit.collider);
                 Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
                 RaycastHit capsuleHit;
                 float radius = .5f;
@@ -180,10 +188,11 @@ namespace Player
                 Debug.DrawRay(downRay, Vector3.down, Color.green);
                 if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, groundLayer))  //Physics.Raycast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
                 {
-                    GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .1f));
+                    // MAKE VARIABLE IN THE FUTURE FOR VAULTSPEED
+                    GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .175f));
                     
                  
-                    Debug.Log(capsuleHit.collider);
+                    //Debug.Log(capsuleHit.collider);
                 }
             }
             else
