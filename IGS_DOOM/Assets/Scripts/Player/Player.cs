@@ -1,11 +1,26 @@
+using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using FSM;
 
 namespace Player
 {
+
+    /*public class PlayerMovementComponent()
+    {
+        private Rigidbody rb;
+        //Movement Variabales
+
+
+        public PlayerMovementComponent(Rigidbody _rb)
+        {
+            rb = _rb;
+        }
+
+    }*/
     public class Player
     {
+        //private PlayerMovementComponent pmc;
         private StateController stateController;
         private InputActions input;
 
@@ -79,8 +94,10 @@ namespace Player
             // Instantiate player objects
             playerObject = playerData.InstantiatePlayer();
             orientation = playerObject.transform.Find("Orientation");
-            
+            rb = playerObject.GetComponent<Rigidbody>();
+            //pmc = new PlayerMovementComponent(rb);
             pTransform = playerObject.transform;
+            
             
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
@@ -90,7 +107,6 @@ namespace Player
         {
             input = new InputActions();
             
-            rb = playerObject.GetComponent<Rigidbody>();
             rb.freezeRotation = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -126,14 +142,46 @@ namespace Player
         private void Update()
         {
             isGrounded = Physics.Raycast(pTransform.position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
+            cam.UpdateCamera(mouseInput);
             
             
             stateController.Update();
+
             SpeedControl();
-            cam.UpdateCamera(mouseInput);
+
+            LedgeGrab();
+            
 
             if (isGrounded) { rb.drag = groundDrag; }
             else { rb.drag = airDrag; }
+        }
+
+        private void LedgeGrab()
+        {
+            RaycastHit wallHit;
+            
+            Debug.DrawRay(pTransform.position, orientation.forward);
+            // Check for wall
+            if (Physics.SphereCast(pTransform.position, .75f, orientation.forward, out wallHit, 1.2f, LayerMask.GetMask("Grabbable")))
+            {
+                Debug.Log(wallHit.collider);
+                RaycastHit capsuleHit;
+                Vector3 capPos1 = pTransform.position + Vector3.up/2 + orientation.forward;
+                Vector3 capPos2 = pTransform.position + Vector3.up + orientation.forward;
+                Debug.DrawLine(capPos1, capPos2, Color.green);
+                if (Physics.CapsuleCast(capPos1, capPos2, 1, orientation.forward, out capsuleHit))
+                {
+                    Debug.Log(capsuleHit.collider);
+                }
+            }
+            else
+            {
+                Debug.Log("No Wall");
+            }
+            // If there is a wall, raycast for ledgedetection
+            // if there is a ledge, and enough room to stand onto the ledge
+            // lerp te player to the ledgegrabbed position
+
         }
 
         private void FixedUpdate()
