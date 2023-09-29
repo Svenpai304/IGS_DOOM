@@ -93,7 +93,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3547766681262327140}
   m_Layer: 0
-  m_Name: AssaultShotgunViewmodel
+  m_Name: CombatShotgunViewmodel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

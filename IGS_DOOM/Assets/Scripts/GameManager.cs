@@ -20,11 +20,24 @@ public class GameManager : MonoBehaviour
         else { Instance = this; }
         
         var a = new Player.Player();
-        var b = new WeaponCarrier();
+        weapons = new WeaponCarrier();
         GlobalAwake?.Invoke();
     }
 
     private WeaponCarrier weapons;
+
+    [ContextMenu("Fire weapon debug")]
+    public void FireWeaponDebug()
+    {
+        StartCoroutine(FireWeaponDebugCoroutine());
+    }
+    private IEnumerator FireWeaponDebugCoroutine()
+    {
+        Debug.Log("Start firing");
+        weapons.CurrentWeapon.FirePressed();
+        yield return new WaitForSeconds(1);
+        weapons.CurrentWeapon.FireReleased();
+    }
 
     private void OnEnable()
     {
