@@ -20,6 +20,7 @@ namespace FSM
             // Handle SlopeMovement
             // Handle Gravity
             sc.player.PlayerMove();
+            
         }
 
         protected override void OnFixedUpdate()

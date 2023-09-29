@@ -20,12 +20,12 @@ namespace FSM
             if (sc.player.isGrounded)
             {
                 sc.ChangeState(sc.GroundedState);
-            }
+            } 
+            sc.player.PlayerMove();
         }
 
         protected override void OnFixedUpdate()
         {
-            
         }
 
         protected override void OnExit()

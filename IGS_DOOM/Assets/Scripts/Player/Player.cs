@@ -141,7 +141,8 @@ namespace Player
 
         private void Update()
         {
-            isGrounded = Physics.Raycast(pTransform.position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
+            RaycastHit groundHit;
+            isGrounded = Physics.SphereCast(pTransform.position, .5f, Vector3.down, out groundHit, .5f, groundLayer); //2f * 0.5f + .1f, groundLayer);
             cam.UpdateCamera(mouseInput);
             
             
@@ -162,15 +163,26 @@ namespace Player
             
             Debug.DrawRay(pTransform.position, orientation.forward);
             // Check for wall
-            if (Physics.SphereCast(pTransform.position, .75f, orientation.forward, out wallHit, 1.2f, LayerMask.GetMask("Grabbable")))
+            if (Physics.Raycast(pTransform.position + Vector3.up, orientation.forward, out wallHit, 1f, groundLayer))
             {
                 Debug.Log(wallHit.collider);
+                Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
                 RaycastHit capsuleHit;
-                Vector3 capPos1 = pTransform.position + Vector3.up/2 + orientation.forward;
-                Vector3 capPos2 = pTransform.position + Vector3.up + orientation.forward;
-                Debug.DrawLine(capPos1, capPos2, Color.green);
-                if (Physics.CapsuleCast(capPos1, capPos2, 1, orientation.forward, out capsuleHit))
+                float radius = .5f;
+                
+                // NEED TO FIGURE OUT, CAPSULE CAST TO SEE IF THERE IS ENOUGH SPACE FOR THE ENTIRE PLAYER
+                
+                //Vector3 capPos1 = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
+                //Vector3 capPos2 = wallHit.point + (orientation.forward * radius) + (Vector3.down * (.5f * playerHeight));
+                //Debug.DrawLine(capPos1, capPos2, Color.green);
+                Vector3 downRay = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
+                
+                Debug.DrawRay(downRay, Vector3.down, Color.green);
+                if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, groundLayer))  //Physics.Raycast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
                 {
+                    GameManager.instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .1f));
+                    
+                 
                     Debug.Log(capsuleHit.collider);
                 }
             }
@@ -178,10 +190,26 @@ namespace Player
             {
                 Debug.Log("No Wall");
             }
+            
+            
             // If there is a wall, raycast for ledgedetection
             // if there is a ledge, and enough room to stand onto the ledge
             // lerp te player to the ledgegrabbed position
 
+        }
+
+        private IEnumerator LerpToVaultPos(Vector3 _targetPos, float duration)
+        {
+            float time = 0;
+            Vector3 startPos = pTransform.position;
+            Vector3 targetPos = new (_targetPos.x, _targetPos.y + playerHeight/2, _targetPos.z);
+            while (time < duration)
+            {
+                rb.MovePosition(Vector3.Lerp(startPos, targetPos, time / duration));
+                time += Time.deltaTime;
+                yield return null;
+            }
+            rb.MovePosition(targetPos);
         }
 
         private void FixedUpdate()
