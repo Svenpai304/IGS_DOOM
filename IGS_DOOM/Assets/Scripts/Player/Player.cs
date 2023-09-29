@@ -1,15 +1,34 @@
+using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using FSM;
 
 namespace Player
 {
+
+    /*public class PlayerMovementComponent()
+    {
+        private Rigidbody rb;
+        //Movement Variabales
+
+
+        public PlayerMovementComponent(Rigidbody _rb)
+        {
+            rb = _rb;
+        }
+
+    }*/
     public class Player
     {
+        //private PlayerMovementComponent pmc;
+        private StateController stateController;
         private InputActions input;
 
         //private PlayerData playerData;
         private GameObject playerObject;
-        private Rigidbody rb;
+        private Transform pTransform;
+        
+        public Rigidbody rb;
         private PlayerCamera cam;
 
         private Transform orientation;
@@ -21,19 +40,41 @@ namespace Player
         private PlayerData playerData;
         public PlayerData PlayerData => playerData;
         private Vector2 moveInput;
-        private bool grounded;
+        public bool isGrounded;
         private LayerMask groundLayer;
 
-        private float moveSpeed = 7f;
-        private float groundDrag = 5f;
-        private float airDrag = 2f;
+
+        private RaycastHit slopeHit;
+
+        private float currentMoveSpeed = 7;
+
+
+
+        private float startYScale;
+        
+
+        
+        // can initialize from constructor
         private float playerHeight = 2f;
 
-        private float jumpForce = 8f;
-        private float jumpCoolDown;
-        private float airMultiplier = .4f;
-        private bool readyToJump;
 
+        private float jumpCoolDown;
+        private bool readyToJump;
+        private bool exitingSlope;
+        
+        
+        // PlayerMovement variables (changable)
+
+        private float airMultiplier = .4f;
+        private float jumpForce = 8f;
+        private float groundDrag = 5f;
+        private float airDrag = 2f;
+        private float crouchYScale = .5f;
+        private float walkSpeed = 5;
+        private float runSpeed = 7;
+        private float crouchSpeed = 6;
+        private float maxSlopeAngle = 60;
+        
         public Player()
         {
             Debug.Log("Player Created");
@@ -43,6 +84,8 @@ namespace Player
             GameManager.GlobalFixedUpdate += FixedUpdate;
             GameManager.GlobalOnEnable += OnEnable;
             GameManager.GlobalOnDisable += OnDisable;
+
+            stateController = new StateController(this);  
             
             // Load player Data from scriptable object
             playerData = Resources.Load<PlayerData>("PlayerData");
@@ -51,6 +94,10 @@ namespace Player
             // Instantiate player objects
             playerObject = playerData.InstantiatePlayer();
             orientation = playerObject.transform.Find("Orientation");
+            rb = playerObject.GetComponent<Rigidbody>();
+            //pmc = new PlayerMovementComponent(rb);
+            pTransform = playerObject.transform;
+            
             
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
@@ -60,7 +107,6 @@ namespace Player
         {
             input = new InputActions();
             
-            rb = playerObject.GetComponent<Rigidbody>();
             rb.freezeRotation = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -70,8 +116,12 @@ namespace Player
             input.Player.Movement.started += MoveInput;
             input.Player.Movement.performed += MoveInput;
             input.Player.Movement.canceled += MoveInput;
+            input.Player.Crouch.started += Crouch;
+            input.Player.Crouch.canceled += Crouch;
             input.Player.Jump.started += Jump;
             input.Player.Jump.performed += Jump;
+
+            startYScale = playerObject.transform.localScale.y;
         }
 
         private void OnEnable()
@@ -91,38 +141,122 @@ namespace Player
 
         private void Update()
         {
-            var position = playerObject.transform.position;
-            grounded = Physics.Raycast(position, Vector3.down, 2f * 0.5f + .1f, groundLayer);
-
-            if (grounded) { rb.drag = groundDrag; }
-            else { rb.drag = airDrag; }
-
+            RaycastHit groundHit;
+            isGrounded = Physics.SphereCast(pTransform.position, .5f, Vector3.down, out groundHit, .5f, groundLayer); //2f * 0.5f + .1f, groundLayer);
             cam.UpdateCamera(mouseInput);
+            
+            
+            stateController.Update();
+
+            SpeedControl();
+
+            LedgeGrab();
+            
+
+            if (isGrounded) { rb.drag = groundDrag; }
+            else { rb.drag = airDrag; }
+        }
+
+        private void LedgeGrab()
+        {
+            RaycastHit wallHit;
+            
+            Debug.DrawRay(pTransform.position, orientation.forward);
+            // Check for wall
+            if (Physics.Raycast(pTransform.position + Vector3.up, orientation.forward, out wallHit, 1f, groundLayer))
+            {
+                Debug.Log(wallHit.collider);
+                Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
+                RaycastHit capsuleHit;
+                float radius = .5f;
+                
+                // NEED TO FIGURE OUT, CAPSULE CAST TO SEE IF THERE IS ENOUGH SPACE FOR THE ENTIRE PLAYER
+                
+                //Vector3 capPos1 = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
+                //Vector3 capPos2 = wallHit.point + (orientation.forward * radius) + (Vector3.down * (.5f * playerHeight));
+                //Debug.DrawLine(capPos1, capPos2, Color.green);
+                Vector3 downRay = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
+                
+                Debug.DrawRay(downRay, Vector3.down, Color.green);
+                if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, groundLayer))  //Physics.Raycast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
+                {
+                    GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, .1f));
+                    
+                 
+                    Debug.Log(capsuleHit.collider);
+                }
+            }
+            else
+            {
+                Debug.Log("No Wall");
+            }
+            
+            
+            // If there is a wall, raycast for ledgedetection
+            // if there is a ledge, and enough room to stand onto the ledge
+            // lerp te player to the ledgegrabbed position
+
+        }
+
+        private IEnumerator LerpToVaultPos(Vector3 _targetPos, float duration)
+        {
+            float time = 0;
+            Vector3 startPos = pTransform.position;
+            Vector3 targetPos = new (_targetPos.x, _targetPos.y + playerHeight/2, _targetPos.z);
+            while (time < duration)
+            {
+                rb.MovePosition(Vector3.Lerp(startPos, targetPos, time / duration));
+                time += Time.deltaTime;
+                yield return null;
+            }
+            rb.MovePosition(targetPos);
         }
 
         private void FixedUpdate()
         {
-            PlayerMove();
+            stateController.FixedUpdate();
         }
 
-        private void PlayerMove()
+        public void PlayerMove()
         {
             moveDirection = playerObject.transform.forward * moveInput.y + playerObject.transform.right * moveInput.x;
 
-            if (grounded)
-                rb.AddForce(moveDirection.normalized * (moveSpeed * 10f), ForceMode.Force);
-            else if (!grounded)
-                rb.AddForce(moveDirection.normalized * (moveSpeed * 10f * airMultiplier), ForceMode.Force);
+            if (OnSlope() && !exitingSlope)
+            {
+                rb.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
+
+                if (rb.velocity.y > 0)
+                {
+                    rb.AddForce(Vector3.down * 80, ForceMode.Force);
+                }
+            }
+            
+            if (isGrounded)
+                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
+            else if (!isGrounded)
+                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
+
+            rb.useGravity = !OnSlope();
         }
 
         private void SpeedControl()
         {
-            Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
-            if (flatVel.magnitude > moveSpeed)
+            if (OnSlope() && !exitingSlope)
             {
-                Vector3 limitedVel = flatVel.normalized * moveSpeed;
-                rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+                if (rb.velocity.magnitude > currentMoveSpeed)
+                {
+                    rb.velocity = rb.velocity.normalized * currentMoveSpeed;
+                }
+            }
+            else
+            {
+                Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+                if (flatVel.magnitude > currentMoveSpeed)
+                {
+                    Vector3 limitedVel = flatVel.normalized * currentMoveSpeed;
+                    rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+                }
             }
         }
 
@@ -139,7 +273,7 @@ namespace Player
         private void Jump(InputAction.CallbackContext value)
         {
             readyToJump = false;
-            if (grounded)
+            if (isGrounded)
             {
                 PerformJump();
             }
@@ -147,17 +281,51 @@ namespace Player
             ResetJump();
         }
 
+        private void Crouch(InputAction.CallbackContext value)
+        {
+            if (value.ReadValueAsButton())
+            {
+                pTransform.localScale = new Vector3(pTransform.localScale.x, crouchYScale, pTransform.localScale.z);
+            
+                rb.AddForce(Vector3.down, ForceMode.Impulse);
+            }
+            else
+            {
+                pTransform.localScale = new Vector3(pTransform.localScale.x, startYScale, pTransform.localScale.z);
+            }
+        }
+
+        private bool OnSlope()
+        {
+            if (Physics.Raycast(playerObject.transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + .3f))
+            {
+                float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+                return angle < maxSlopeAngle && angle != 0;
+            }
+
+            return false;
+        }
+
+        private Vector3 GetSlopeMovementDirection()
+        {
+            return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+        }
+
         private void PerformJump()
         {
+            exitingSlope = true;
+            
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
         private void ResetJump()
         {
-            if (grounded)
+            if (isGrounded)
             {
                 readyToJump = true;
+                
+                exitingSlope = false;
             }
         }
     }

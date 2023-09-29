@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
-{ 
+{
+    public static GameManager Instance { get; private set; }
     public delegate void Action();
     public static Action GlobalAwake;
     public static Action GlobalStart;
@@ -15,6 +16,9 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(this); }
+        else { Instance = this; }
+        
         var a = new Player.Player();
         weapons = new WeaponCarrier();
         GlobalAwake?.Invoke();
