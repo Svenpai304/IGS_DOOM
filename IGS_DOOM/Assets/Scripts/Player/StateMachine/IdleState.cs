@@ -21,7 +21,7 @@ namespace FSM
 
         protected override void OnFixedUpdate()
         {
-            
+            base.OnFixedUpdate();
         }
 
         protected override void OnExit()

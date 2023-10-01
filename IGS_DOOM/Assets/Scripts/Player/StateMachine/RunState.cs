@@ -7,6 +7,7 @@ namespace FSM
         protected override void OnEnter()
         {
             // Set movement data like movespeed
+            sc.player.CurrentMoveSpeed = sc.player.RunSpeed;
         }
 
         protected override void OnUpdate()
@@ -17,13 +18,11 @@ namespace FSM
             {
                 sc.ChangeState(sc.IdleState);
             }
-
- 
         }
 
         protected override void OnFixedUpdate()
         {
-            
+            base.OnFixedUpdate();
         }
 
         protected override void OnExit()

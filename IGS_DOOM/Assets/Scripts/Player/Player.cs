@@ -48,14 +48,14 @@ namespace Player
 
         private RaycastHit slopeHit;
 
-        private float currentMoveSpeed = 7;
+        public float CurrentMoveSpeed = 7;
 
 
 
         private float startYScale;
         private float playerRadius;
-        
 
+        private float coyoteTimeCounter;
         
         // can initialize from constructor
         private float playerHeight;
@@ -64,19 +64,22 @@ namespace Player
         private float jumpCoolDown;
         private bool readyToJump;
         private bool exitingSlope;
+        private bool doubleJump;
         
         
         // PlayerMovement variables (changable)
 
+        private float coyoteTime = 3.2f;
         private float airMultiplier = .4f;
-        private float jumpForce = 8f;
-        private float groundDrag = 1.5f;
-        private float airDrag = .5f;
+        private float jumpForce = 18f;
+        private float doubleJumpForce = 15f;
+        private float groundDrag = 5f;
+        private float airDrag = 0f;
         private float crouchYScale = .5f;
-        private float walkSpeed = 5;
-        private float runSpeed = 7;
-        private float crouchSpeed = 6;
-        private float maxSlopeAngle = 60;
+        public float WalkSpeed = 5;
+        public float RunSpeed = 7;
+        public float CrouchSpeed = 6;
+        private float maxSlopeAngle = 31;
         private float vaultSpeed = .165f;
         
         public Player()
@@ -125,7 +128,7 @@ namespace Player
             input.Player.Crouch.started += Crouch;
             input.Player.Crouch.canceled += Crouch;
             input.Player.Jump.started += Jump;
-            input.Player.Jump.performed += Jump;
+            input.Player.Jump.canceled += Jump;
 
             InitPlayerVariables();
         }
@@ -158,9 +161,10 @@ namespace Player
             // Grounded check
             // done with CheckCapsule because raycast was very buggy on a little uneven terrain
             Vector3 groundStart = pCollider.bounds.center;
-            Vector3 groundEnd = new (pCollider.bounds.center.x, pCollider.bounds.min.y - 0.1f, pCollider.bounds.center.z);
+            Vector3 groundEnd = new (pCollider.bounds.center.x, pCollider.bounds.min.y, pCollider.bounds.center.z);
             isGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, groundLayer);
-            Debug.Log(isGrounded);
+            Debug.Log(doubleJump);
+            //Debug.Log(isGrounded);
             
             
             cam.UpdateCamera(mouseInput);
@@ -175,8 +179,19 @@ namespace Player
             // MOVE THIS TO A STATE PLS
             LedgeGrab();
             
-            if (isGrounded) { rb.drag = groundDrag; }
-            else { rb.drag = airDrag; }
+            if (isGrounded) 
+            { 
+                Debug.Log("is Grounded");
+                rb.drag = groundDrag;
+                //exitingSlope = false;
+                readyToJump = true;
+                coyoteTimeCounter = coyoteTime;
+            }
+            else
+            {
+                coyoteTimeCounter -= Time.deltaTime;
+                rb.drag = airDrag;
+            }
         }
         private void LedgeGrab()
         {
@@ -211,7 +226,7 @@ namespace Player
             }
             else
             {
-                Debug.Log("No Wall");
+                //Debug.Log("No Wall");
             }
         }
 
@@ -234,6 +249,7 @@ namespace Player
         private void FixedUpdate()
         {
             stateController.FixedUpdate();
+            //PlayerMove();
         }
 
         public void PlayerMove()
@@ -242,7 +258,7 @@ namespace Player
 
             if (OnSlope() && !exitingSlope)
             {
-                rb.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
+                rb.AddForce(GetSlopeMovementDirection() * (CurrentMoveSpeed * 20f), ForceMode.Force);
 
                 if (rb.velocity.y > 0)
                 {
@@ -251,31 +267,31 @@ namespace Player
             }
             
             if (isGrounded && !OnSlope())
-                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
+                rb.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f), ForceMode.Force);
             else if (!isGrounded)
-                rb.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
+                rb.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
 
             rb.useGravity = !OnSlope();
-            Debug.Log(OnSlope().ToString());
-            Debug.Log(rb.velocity.magnitude);
+            //Debug.Log(OnSlope().ToString());
+            //Debug.Log(rb.velocity.magnitude);
         }
 
         private void SpeedControl()
         {
             if (OnSlope() && !exitingSlope)
             {
-                if (rb.velocity.magnitude > currentMoveSpeed)
+                if (rb.velocity.magnitude > CurrentMoveSpeed)
                 {
-                    rb.velocity = rb.velocity.normalized * currentMoveSpeed;
+                    rb.velocity = rb.velocity.normalized * CurrentMoveSpeed;
                 }
             }
             else
             {
                 Vector3 flatVel = new (rb.velocity.x, 0f, rb.velocity.z);
 
-                if (flatVel.magnitude > currentMoveSpeed)
+                if (flatVel.magnitude > CurrentMoveSpeed)
                 {
-                    Vector3 limitedVel = flatVel.normalized * currentMoveSpeed;
+                    Vector3 limitedVel = flatVel.normalized * CurrentMoveSpeed;
                     rb.velocity = new (limitedVel.x, rb.velocity.y, limitedVel.z);
                 }
             }
@@ -297,27 +313,52 @@ namespace Player
 
         private void Jump(InputAction.CallbackContext value)
         {
-            readyToJump = false;
-            if (isGrounded)
+            //Debug.Log(value.ReadValueAsButton());    
+            if (coyoteTimeCounter > 0f && value.ReadValueAsButton())
             {
-                PerformJump();
+                if (isGrounded || doubleJump)
+                {
+                    readyToJump = false;
+                    PerformJump();
+
+                    doubleJump = !doubleJump;
+                    
+                    // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP ETC
+                    // SLOPE JUMPING WILL BE ENABLED THIS WAY
+                    // PROBS BEST WAY IS VIA THE STATE MACHINE
+                    //ResetJump();
+                }
             }
-            
-            ResetJump();
+
+            if (!value.ReadValueAsButton())
+            {
+                coyoteTimeCounter = 0f;
+            }
         }
 
         private void Crouch(InputAction.CallbackContext value)
         {
             if (value.ReadValueAsButton())
             {
-                pTransform.localScale = new (pTransform.localScale.x, crouchYScale, pTransform.localScale.z);
-            
+                pTransform.localScale = new(pTransform.localScale.x, crouchYScale, pTransform.localScale.z);
+
                 rb.AddForce(Vector3.down, ForceMode.Impulse);
             }
             else
             {
-                pTransform.localScale = new (pTransform.localScale.x, startYScale, pTransform.localScale.z);
+                pTransform.localScale = new(pTransform.localScale.x, startYScale, pTransform.localScale.z);
             }
+        }
+
+        private int maxBounces = 5;
+        private float skinWidth = .015f;
+        private Vector3 CollideAndSlide(Vector3 _vel, Vector3 _startPos, int _depth)
+        {
+            if (_depth >= maxBounces) { return Vector3.zero; }
+            
+            return _vel;
+            
+            
         }
 
         private bool OnSlope()
@@ -331,21 +372,20 @@ namespace Player
             return false;
         }
 
-
         private void PerformJump()
         {
             exitingSlope = true;
-            
             rb.velocity = new (rb.velocity.x, 0f, rb.velocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * (doubleJump ? doubleJumpForce : jumpForce), ForceMode.Impulse);
         }
 
         private void ResetJump()
         {
             if (isGrounded)
             {
+                exitingSlope = false;
                 readyToJump = true;
-                
+                doubleJump = false;
                 exitingSlope = false;
             }
         }

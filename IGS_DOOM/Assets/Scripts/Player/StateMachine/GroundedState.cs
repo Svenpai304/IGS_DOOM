@@ -17,14 +17,16 @@ namespace FSM
             {
                 sc.ChangeState(sc.InAirState);
             }
+            
             // Handle SlopeMovement
             // Handle Gravity
-            sc.player.PlayerMove();
             
         }
 
         protected override void OnFixedUpdate()
         {
+            //Debug.Log("fixedUpodate move");
+            sc.player.PlayerMove();
         }
 
         protected override void OnExit()

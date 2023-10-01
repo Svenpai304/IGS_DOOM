@@ -35,6 +35,7 @@ namespace FSM
 
         public void FixedUpdate()
         {
+            //player.PlayerMove();
             currentState?.OnStateFixedUpdate();
         }
 

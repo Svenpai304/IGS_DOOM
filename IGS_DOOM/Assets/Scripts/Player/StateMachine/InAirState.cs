@@ -21,7 +21,7 @@ namespace FSM
             {
                 sc.ChangeState(sc.GroundedState);
             } 
-            sc.player.PlayerMove();
+            //sc.player.PlayerMove();
         }
 
         protected override void OnFixedUpdate()
