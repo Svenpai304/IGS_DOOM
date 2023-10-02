@@ -13,6 +13,11 @@ namespace FSM
         {
             // Check for ledgeGrab
             // if can ledgeGrab > switch to ledgegrab state
+            Debug.Log(cmc.CanLedgeGrab());
+            if (cmc.CanLedgeGrab())
+            {
+                cmc.LedgeGrab();
+            }
 
             // if can InAirJump > switch to jump state
             // otherwise stay in this InAirState
@@ -21,7 +26,7 @@ namespace FSM
 
         protected override void OnFixedUpdate()
         {
-            //LedgeGrab();
+            
         }
 
         protected override void OnExit()

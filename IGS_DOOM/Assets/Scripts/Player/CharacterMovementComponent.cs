@@ -6,18 +6,13 @@ namespace Player
 {
     public class CharacterMovementComponent
     {
-        
-        private Transform orientation;
-
-        
         private Vector3 moveDirection;
         
         private MovementVariables pMoveData;
         private PlayerData pData;
-        
+
         public bool isGrounded;
-        private LayerMask groundLayer;
-        
+
         private RaycastHit slopeHit;
 
         public float CurrentMoveSpeed = 7;
@@ -42,23 +37,15 @@ namespace Player
         // PlayerMovement variables (changable)
 
         private float coyoteTime = 3.2f;
-        private float airMultiplier = .4f;
-        private float jumpForce = 18f;
-        private float doubleJumpForce = 15f;
-        private float groundDrag = 5f;
-        private float airDrag = 0f;
         private float crouchYScale = .5f;
-        public float WalkSpeed = 5;
-        public float RunSpeed = 7;
-        public float CrouchSpeed = 6;
-        private float maxSlopeAngle = 31;
-        private float vaultSpeed = .165f;
-        
+
         public CharacterMovementComponent(PlayerData _pData)
         {
             pData = _pData;
             pMoveData = pData.PMoveData;
-            
+
+            GameManager.GlobalFixedUpdate += FixedUpdate;
+            GameManager.GlobalUpdate += Update;
             InitPlayerVariables();
         }
         
@@ -68,6 +55,10 @@ namespace Player
             playerHeight = pMoveData.Collider.height;
             playerHalfHeight = playerHeight / 2;
             startYScale = pMoveData.pTransform.localScale.y;
+
+            pMoveData.StepUpMax.position = new(pMoveData.StepUpMax.position.x, pMoveData.StepHeight, 
+                pMoveData.StepUpMax.position.z);
+
         }
         
         public void Update()
@@ -85,8 +76,7 @@ namespace Player
             // Update the state controller
 
             if (isGrounded) 
-            { 
-                Debug.Log("is Grounded");
+            {
                 pMoveData.RB.drag = pMoveData.GroundDrag;
                 //exitingSlope = false;
                 readyToJump = true;
@@ -97,6 +87,11 @@ namespace Player
                 coyoteTimeCounter -= Time.deltaTime;
                 pMoveData.RB.drag = pMoveData.AirDrag;
             }
+        }
+
+        private void FixedUpdate()
+        {
+            StepUp();
         }
         
         public void Crouch()
@@ -132,7 +127,6 @@ namespace Player
         
         public void Jump()
         {
-            Debug.Log("Jump");
             if (coyoteTimeCounter > 0f)
             {
                 if (isGrounded || pMoveData.CanDoubleJump)
@@ -173,10 +167,10 @@ namespace Player
                 pMoveData.CanDoubleJump = false;
             }
         }
-        
-        private void LedgeGrab()
+
+        private RaycastHit capsuleHit;
+        public bool CanLedgeGrab()
         {
-            // Check for wall
             RaycastHit wallHit;
             var bounds = pMoveData.Collider.bounds;
             Vector3 point1 = bounds.center;
@@ -186,24 +180,30 @@ namespace Player
             Vector3 point2 = new (bounds.center.x, bounds.center.y + playerHalfHeight, bounds.center.z);
             
             // If there is a wall, raycast for ledgedetection
-            if (Physics.CapsuleCast(point1, point2, .1f, orientation.forward, out wallHit, 1f, groundLayer))  //Physics.Raycast(pTransform.position + Vector3.up, orientation.forward, out wallHit, 1f, groundLayer))
+            if (Physics.CapsuleCast(point1, point2, .1f, pMoveData.Orientation.forward, out wallHit, 
+                    1f, pData.GroundLayer))
             {
                 Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
-                RaycastHit capsuleHit;
+                
                 // NEED TO FIGURE OUT, CAPSULE CAST TO SEE IF THERE IS ENOUGH SPACE FOR THE ENTIRE PLAYER
                 //Vector3 capPos1 = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
                 //Vector3 capPos2 = wallHit.point + (orientation.forward * radius) + (Vector3.down * (.5f * playerHeight));
                 //Debug.DrawLine(capPos1, capPos2, Color.green);
-                Vector3 downRay = wallHit.point + (orientation.forward * playerRadius) + (Vector3.up * (.5f * playerHeight));
+                Vector3 downRay = wallHit.point + (pMoveData.Orientation.forward * playerRadius) + (Vector3.up * (.5f * playerHeight));
                 
                 // check if there is a ledge, and enough room to stand onto the ledge
                 Debug.DrawRay(downRay, Vector3.down, Color.green);
-                if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, groundLayer))  //Physics.CapsuleCast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
+                if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, pData.GroundLayer))  //Physics.CapsuleCast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
                 {
-                    // lerp the player to the valid position
-                    GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, vaultSpeed));
+                    return true;
                 }
             }
+
+            return false;
+        }
+        public void LedgeGrab()
+        {
+            GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, pMoveData.VaultSpeed));
         }
 
         private IEnumerator LerpToVaultPos(Vector3 _targetPos, float _duration)
@@ -220,6 +220,26 @@ namespace Player
             }
             // Make sure the player is at the target pos at the end (lerp isn't exact)
             pMoveData.RB.MovePosition(targetPos);
+        }
+
+        private void StepUp()
+        {
+            Vector3[] directions =
+            {
+                pMoveData.Orientation.TransformDirection(Vector3.forward),
+                pMoveData.Orientation.TransformDirection(1.5f, 0, 1),
+                pMoveData.Orientation.TransformDirection(-1.5f, 0, 1),
+            };
+            foreach (var direction in directions)
+            {
+                if (Physics.Raycast(pMoveData.StepUpMin.position, direction, .4f))
+                {
+                    if (Physics.Raycast(pMoveData.StepUpMin.position, direction, .6f))
+                    {
+                        pMoveData.RB.position -= new Vector3(0f, -pMoveData.StepSmooth, 0f);
+                    }
+                }
+            }
         }
 
         public void PlayerMove(Vector2 _moveInput)
@@ -239,7 +259,7 @@ namespace Player
             if (isGrounded && !OnSlope())
                 pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f), ForceMode.Force);
             else if (!isGrounded)
-                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
+                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
 
             pMoveData.RB.useGravity = !OnSlope();
         }
@@ -275,7 +295,7 @@ namespace Player
             if (Physics.Raycast(pMoveData.pTransform.position, Vector3.down, out slopeHit, playerHalfHeight + .3f))
             {
                 float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
-                return angle < maxSlopeAngle && angle != 0;
+                return angle < pMoveData.MaxSlopeAngle && angle != 0;
             }
 
             return false;

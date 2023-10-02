@@ -51,12 +51,19 @@ namespace Player
         public float AirMultiplier = .4f;
         public float JumpForce = 18f;
 
-        // Hidden vars;
+        public float StepHeight = .3f;
+        public float StepSmooth = .1f;
 
+        
+        // Hidden vars;
         [HideInInspector]
         public Transform Orientation;
         [HideInInspector]
         public Transform pTransform;
+        [HideInInspector]
+        public Transform StepUpMin;
+        [HideInInspector]
+        public Transform StepUpMax;
         [HideInInspector]
         public CapsuleCollider Collider;
         [HideInInspector]

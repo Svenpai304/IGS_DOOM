@@ -38,16 +38,16 @@ namespace Player
             // Load player Data from scriptable object
             playerData = Resources.Load<PlayerData>("PlayerData");
             playerObject = playerData.InstantiatePlayer();
-            
             pMoveData = playerData.PMoveData;
             pMoveData.RB = playerObject.GetComponent<Rigidbody>();
-            pMoveData.Orientation = playerObject.transform.Find("Orientation");
             pMoveData.Collider = playerObject.GetComponentInChildren<CapsuleCollider>();
+            pMoveData.Orientation = playerObject.transform.Find("Orientation");
+            pMoveData.StepUpMin = playerObject.transform.Find("stepUpMin");
+            pMoveData.StepUpMax = playerObject.transform.Find("stepUpMax");
+            pMoveData.pTransform = playerObject.transform;
             
             // Instantiate player objects
-            //groundLayer = playerData.GroundLayer;
-            
-            pMoveData.pTransform = playerObject.transform;
+
             cmc = new CharacterMovementComponent(playerData);
             
             stateController = new StateController(cmc);  
@@ -67,7 +67,7 @@ namespace Player
             input.Player.Movement.performed += MoveInput;
             input.Player.Movement.canceled += MoveInput;
             input.Player.Jump.started += JumpInput;
-            input.Player.Jump.canceled += JumpInput;
+            //input.Player.Jump.canceled += JumpInput;
             input.Player.Crouch.started += CrouchInput;
             input.Player.Walk.started += WalkInput;
             input.Player.Walk.canceled += WalkInput;
@@ -144,12 +144,14 @@ namespace Player
         private void Update()
         {
             cam.UpdateCamera(mouseInput);
-            cmc.Update();
-            Debug.Log(pMoveData.IsCrouching);
         }
 
         private void FixedUpdate()
         {
+            if (!pMoveData.IsGrounded)
+            {
+                stateController.ChangeState(stateController.InAirState);
+            }
             cmc.PlayerMove(moveInput);
         }
     }
