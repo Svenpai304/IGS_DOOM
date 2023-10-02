@@ -65,10 +65,12 @@ public class Weapon : ScriptableObject, IWeapon
     public void SwitchMod()
     {
         int newMod = Data.CurrentMod + 1;
-        if( newMod > 2 )
+        if (newMod > 2)
         {
             newMod = 1;
         }
+        if (!Data.ModsUnlocked[newMod - 1]) { return; }
+
         if (Data.CurrentMod != 0)
         {
             altFires[Data.CurrentMod - 1].OnSwitchOut(this);

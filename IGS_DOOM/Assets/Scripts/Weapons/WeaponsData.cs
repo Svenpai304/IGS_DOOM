@@ -15,6 +15,7 @@ public class WeaponData
     public int Ammo;
 
     [HideInInspector] public int CurrentMod;
+    [HideInInspector] public Player.Player Owner;
 
     public bool Unlocked;
 
