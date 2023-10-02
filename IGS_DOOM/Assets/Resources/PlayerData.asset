@@ -13,11 +13,27 @@ MonoBehaviour:
   m_Name: PlayerData
   m_EditorClassIdentifier: 
   Player: {fileID: 6400789772574451950, guid: a2a3b158321568a4996d8592cadbb9ec, type: 3}
-  tGroundLayer:
+  GroundLayer:
     serializedVersion: 2
     m_Bits: 256
   Camera: {fileID: 6213602980868173989, guid: 90dcfea5972c85449853aa2d4ade2143, type: 3}
   pMoveData:
+    AirDrag: 0
+    GroundDrag: 5
+    CrouchYScale: 0.5
+    RunSpeed: 8
     WalkSpeed: 5.5
     CrouchSpeed: 6.25
-    RunSpeed: 8
+    CurrentMoveSpeed: 8
+    RB: {fileID: 0}
+    ExitingSlope: 0
+    CanDoubleJump: 0
+    IsGrounded: 0
+    MaxSlopeAngle: 31
+    VaultSpeed: 0.165
+    CoyoteTime: 3.2
+    AirMultiplier: 0.4
+    JumpForce: 18
+    DoubleJumpForce: 15
+    Orientation: {fileID: 0}
+    Collider: {fileID: 0}

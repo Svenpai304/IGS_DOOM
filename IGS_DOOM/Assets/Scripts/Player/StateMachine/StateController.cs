@@ -23,25 +23,16 @@ namespace FSM
         public InAirState InAirState = new();
         public InAIrJumpState InAIrJumpState = new();
         public LedgeGrabState LedgeGrabState = new();
-
-        public InputManager input;
+        
         
         private MovementVariables playerData;
         
         public StateController(MovementVariables _pData)
         {
             playerData = _pData;
-            input = new InputManager();
-            ChangeState(GroundedState);
-            input.OnCrouchPressed += OnCrouchPressed;
-            
+            ChangeState(GroundedState);            
         }
-
-        private void OnCrouchPressed()
-        {
-            
-        }
-
+        
         public void Update()
         {
             //Debug.Log(currentState);
