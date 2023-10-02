@@ -38,14 +38,7 @@ namespace Player
         public float WalkSpeed = 5;
         public float CrouchSpeed = 6;
         
-        [HideInInspector]
-        public float CurrentMoveSpeed;
-        [HideInInspector]
-        public Rigidbody RB;
-        [HideInInspector]
-        public bool ExitingSlope;
-        [HideInInspector]
-        public bool CanDoubleJump;
+
         
         public bool IsGrounded;
         
@@ -57,12 +50,25 @@ namespace Player
         public float CoyoteTime = 3.2f;
         public float AirMultiplier = .4f;
         public float JumpForce = 18f;
-        public float DoubleJumpForce = 15f;
+
+        // Hidden vars;
 
         [HideInInspector]
         public Transform Orientation;
         [HideInInspector]
+        public Transform pTransform;
+        [HideInInspector]
         public CapsuleCollider Collider;
+        [HideInInspector]
+        public Rigidbody RB;
+        [HideInInspector]
+        public bool ExitingSlope;
+        [HideInInspector]
+        public bool CanDoubleJump;
+        [HideInInspector]
+        public bool IsCrouching = false;
+        [HideInInspector]
+        public bool IsWalking = false;
 
     }
 }

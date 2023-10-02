@@ -6,11 +6,11 @@ namespace FSM
     public abstract class BaseState
     {
         protected StateController sc;
-        protected MovementVariables pData;
-        public void OnStateEnter(StateController _sc, MovementVariables _pData)
+        protected CharacterMovementComponent cmc;
+        public void OnStateEnter(StateController _sc, CharacterMovementComponent _cmc)
         {
             sc = _sc;
-            pData = _pData;
+            cmc = _cmc;
             OnEnter();
         }
         

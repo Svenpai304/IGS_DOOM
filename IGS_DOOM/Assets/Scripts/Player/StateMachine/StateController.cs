@@ -14,7 +14,6 @@ namespace FSM
 
         // State Definitions
         public GroundedState GroundedState = new();
-        public IdleState IdleState = new();
         public WalkState WalkState = new();
         public RunState RunState = new ();
         public CrouchState CrouchState = new();
@@ -25,21 +24,23 @@ namespace FSM
         public LedgeGrabState LedgeGrabState = new();
         
         
-        private MovementVariables playerData;
-        
-        public StateController(MovementVariables _pData)
+        private CharacterMovementComponent cmc;
+
+        public StateController(CharacterMovementComponent _cmc)
         {
-            playerData = _pData;
-            ChangeState(GroundedState);            
+            cmc = _cmc;
+            ChangeState(GroundedState);
+            GameManager.GlobalUpdate += Update;
+            GameManager.GlobalFixedUpdate += FixedUpdate;
         }
         
-        public void Update()
+        private void Update()
         {
-            //Debug.Log(currentState);
+            Debug.Log(currentState);
             currentState?.OnStateUpdate();
         }
 
-        public void FixedUpdate()
+        private void FixedUpdate()
         {
             //player.PlayerMove();
             currentState?.OnStateFixedUpdate();
@@ -50,7 +51,7 @@ namespace FSM
             currentState?.OnStateExit();
 
             currentState = _newState;
-            currentState.OnStateEnter(this, playerData);
+            currentState.OnStateEnter(this, cmc);
         }
     }
 }

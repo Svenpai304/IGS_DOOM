@@ -22,12 +22,8 @@ MonoBehaviour:
     GroundDrag: 5
     CrouchYScale: 0.5
     RunSpeed: 8
-    WalkSpeed: 5.5
-    CrouchSpeed: 6.25
-    CurrentMoveSpeed: 8
-    RB: {fileID: 0}
-    ExitingSlope: 0
-    CanDoubleJump: 0
+    WalkSpeed: 4.5
+    CrouchSpeed: 5
     IsGrounded: 0
     MaxSlopeAngle: 31
     VaultSpeed: 0.165
@@ -36,4 +32,10 @@ MonoBehaviour:
     JumpForce: 18
     DoubleJumpForce: 15
     Orientation: {fileID: 0}
+    pTransform: {fileID: 0}
     Collider: {fileID: 0}
+    RB: {fileID: 0}
+    ExitingSlope: 0
+    CanDoubleJump: 0
+    IsCrouching: 0
+    IsWalking: 0

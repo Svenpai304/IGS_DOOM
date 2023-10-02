@@ -6,18 +6,13 @@ namespace FSM
     {
         protected override void OnEnter()
         {
-            // Set movement data like movespeed
-            pData.CurrentMoveSpeed = pData.RunSpeed;
+            cmc.Run();
         }
 
         protected override void OnUpdate()
         {
             base.OnUpdate();
             //Debug.Log("RunStateUpdate");
-            if (pData.RB.velocity.magnitude < .1f)
-            {
-                sc.ChangeState(sc.IdleState);
-            }
         }
 
         protected override void OnFixedUpdate()

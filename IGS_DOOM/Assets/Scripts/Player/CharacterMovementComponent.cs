@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace Player
@@ -12,11 +13,11 @@ namespace Player
         private Vector3 moveDirection;
         
         private MovementVariables pMoveData;
+        private PlayerData pData;
         
         public bool isGrounded;
         private LayerMask groundLayer;
-
-
+        
         private RaycastHit slopeHit;
 
         public float CurrentMoveSpeed = 7;
@@ -53,9 +54,124 @@ namespace Player
         private float maxSlopeAngle = 31;
         private float vaultSpeed = .165f;
         
-        CharacterMovementComponent(MovementVariables _pMoveData)
+        public CharacterMovementComponent(PlayerData _pData)
         {
-            pMoveData = _pMoveData;
+            pData = _pData;
+            pMoveData = pData.PMoveData;
+            
+            InitPlayerVariables();
+        }
+        
+        private void InitPlayerVariables()
+        {
+            playerRadius = pMoveData.Collider.radius;
+            playerHeight = pMoveData.Collider.height;
+            playerHalfHeight = playerHeight / 2;
+            startYScale = pMoveData.pTransform.localScale.y;
+        }
+        
+        public void Update()
+        {
+            // Grounded check
+            // done with CheckCapsule because raycast was very buggy on a little uneven terrain
+            var bounds = pMoveData.Collider.bounds;
+            Vector3 groundStart = bounds.center;
+            Vector3 groundEnd = new (bounds.center.x, bounds.min.y - .2f, bounds.center.z);
+            isGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, pData.GroundLayer);
+            Debug.Log(isGrounded);
+            // clamp the speed before applying it to the player
+            SpeedControl();
+            
+            // Update the state controller
+
+            if (isGrounded) 
+            { 
+                Debug.Log("is Grounded");
+                pMoveData.RB.drag = pMoveData.GroundDrag;
+                //exitingSlope = false;
+                readyToJump = true;
+                coyoteTimeCounter = coyoteTime;
+            }
+            else
+            {
+                coyoteTimeCounter -= Time.deltaTime;
+                pMoveData.RB.drag = pMoveData.AirDrag;
+            }
+        }
+        
+        public void Crouch()
+        {
+            CurrentMoveSpeed = pMoveData.CrouchSpeed;
+            
+            var localScale = pMoveData.pTransform.localScale;
+            localScale = new(localScale.x, crouchYScale, localScale.z);
+            pMoveData.pTransform.localScale = localScale;
+
+            // LERP THE SCALE FOR SMOOTHER CROUCH << MAYBE???
+            pMoveData.RB.AddForce(Vector3.down * 2.5f, ForceMode.Impulse);
+        }
+
+        public void UnCrouch()
+        {
+            CurrentMoveSpeed = pMoveData.RunSpeed;
+            
+            var localScale = pMoveData.pTransform.localScale;
+            localScale = new(localScale.x, startYScale, localScale.z);
+            pMoveData.pTransform.localScale = localScale;
+        }
+
+        public void Walk()
+        {
+            CurrentMoveSpeed = pMoveData.WalkSpeed;
+        }
+        
+        public void Run()
+        {
+            CurrentMoveSpeed = pMoveData.RunSpeed;
+        }
+        
+        public void Jump()
+        {
+            Debug.Log("Jump");
+            if (coyoteTimeCounter > 0f)
+            {
+                if (isGrounded || pMoveData.CanDoubleJump)
+                {
+                    readyToJump = false;
+                    PerformJump();
+
+                    pMoveData.CanDoubleJump = !pMoveData.CanDoubleJump;
+        
+            // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP AND COYOTETIME
+            // SLOPE JUMPING WILL BE ENABLED THIS WAY
+            // THIS DOESNT WORK BECAUSE THE SYSTEM ISNT RESETTING THE ISEXETING SLOPE VAR
+            // PROBS BEST WAY IS VIA THE STATE MACHINE
+            //ResetJump();
+                }
+            }
+
+            /*if (!callbackContext.ReadValueAsButton())
+            {
+                // THIS NEEDS TO MOVE I THINK :)
+                coyoteTimeCounter = 0f;
+            }*/
+        }
+
+        private void PerformJump()
+        {
+            pMoveData.ExitingSlope = true;
+            pMoveData.RB.velocity = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
+            pMoveData.RB.AddForce(Vector3.up * pMoveData.JumpForce, ForceMode.Impulse);
+        }
+
+        private void ResetJump()
+        {
+            if (isGrounded)
+            {
+                pMoveData.ExitingSlope = false;
+                readyToJump = true;
+                pMoveData.CanDoubleJump = false;
+            }
         }
         
         private void LedgeGrab()
@@ -93,7 +209,7 @@ namespace Player
         private IEnumerator LerpToVaultPos(Vector3 _targetPos, float _duration)
         {
             float time = 0;
-            Vector3 startPos = pTransform.position;
+            Vector3 startPos = pMoveData.pTransform.position;
             Vector3 targetPos = new (_targetPos.x, _targetPos.y + playerHalfHeight, _targetPos.z);
             while (time < _duration)
             {
@@ -106,18 +222,9 @@ namespace Player
             pMoveData.RB.MovePosition(targetPos);
         }
 
-        private void FixedUpdate()
+        public void PlayerMove(Vector2 _moveInput)
         {
-            stateController.FixedUpdate();
-            // MOVE THIS TO A STATE PLS
-            //LedgeGrab();
-            
-            PlayerMove();
-        }
-
-        public void PlayerMove()
-        {
-            moveDirection = pMoveData.Orientation.forward * moveInput.y + pMoveData.Orientation.right * moveInput.x;
+            moveDirection = pMoveData.Orientation.forward * _moveInput.y + pMoveData.Orientation.right * _moveInput.x;
 
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
@@ -163,26 +270,9 @@ namespace Player
             return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
         }
 
-
-
-        private IEnumerator HandleCrouch(float _targetHeight, float _duration)
-        {
-            float time = 0;
-            Vector3 targetHeight = new(pTransform.localScale.x, _targetHeight, pTransform.localScale.z);
-            while (time < _duration)
-            {
-                // Lerp the playerScale to the targetHeight
-                pTransform.localScale = Vector3.Lerp(pTransform.localScale, targetHeight, time / _duration);
-                time += Time.deltaTime;
-                yield return null;
-            }
-            // Make sure the player is at the target Height at the end
-            pTransform.localScale = targetHeight;
-        }
-
         private bool OnSlope()
         {
-            if (Physics.Raycast(pTransform.position, Vector3.down, out slopeHit, playerHalfHeight + .3f))
+            if (Physics.Raycast(pMoveData.pTransform.position, Vector3.down, out slopeHit, playerHalfHeight + .3f))
             {
                 float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
                 return angle < maxSlopeAngle && angle != 0;
@@ -190,23 +280,5 @@ namespace Player
 
             return false;
         }
-
-        private void PerformJump()
-        {
-            pMoveData.ExitingSlope = true;
-            pMoveData.RB.velocity = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
-            pMoveData.RB.AddForce(Vector3.up * (pMoveData.CanDoubleJump ? doubleJumpForce : jumpForce), ForceMode.Impulse);
-        }
-
-        /*private void ResetJump()
-        {
-            if (isGrounded)
-            {
-                exitingSlope = false;
-                readyToJump = true;
-                doubleJump = false;
-                exitingSlope = false;
-            }
-        }*/
     }
 }

@@ -4,7 +4,7 @@
     {
         protected override void OnEnter()
         {
-            
+            cmc.Crouch();
         }
 
         protected override void OnUpdate()
@@ -19,7 +19,7 @@
 
         protected override void OnExit()
         {
-            
+            cmc.UnCrouch();
         }
     }
 }

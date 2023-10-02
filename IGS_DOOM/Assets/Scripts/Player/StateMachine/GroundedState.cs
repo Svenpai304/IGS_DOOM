@@ -6,19 +6,15 @@ namespace FSM
     {
         protected override void OnEnter()
         {
-            sc.ChangeState(sc.IdleState);
+            sc.ChangeState(sc.RunState);
         }
 
         protected override void OnUpdate()
         {
             //Debug.Log("GroundedStateUpdate");
             // CheckSwitch states
-            if (!pData.IsGrounded)
-            {
-                sc.ChangeState(sc.InAirState);
-            }
-            
-            
+
+
             // Handle SlopeMovement
             // Handle Gravity
             
