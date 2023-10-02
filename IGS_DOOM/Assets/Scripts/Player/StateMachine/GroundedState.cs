@@ -13,10 +13,11 @@ namespace FSM
         {
             //Debug.Log("GroundedStateUpdate");
             // CheckSwitch states
-            if (!sc.player.isGrounded)
+            if (!pData.IsGrounded)
             {
                 sc.ChangeState(sc.InAirState);
             }
+            
             
             // Handle SlopeMovement
             // Handle Gravity
@@ -26,7 +27,7 @@ namespace FSM
         protected override void OnFixedUpdate()
         {
             //Debug.Log("fixedUpodate move");
-            sc.player.PlayerMove();
+            
         }
 
         protected override void OnExit()

@@ -5,31 +5,17 @@ using FSM;
 using Unity.VisualScripting;
 
 namespace Player
-{
-
-    /*public class PlayerMovementComponent()
-    {
-        private Rigidbody rb;
-        //Movement Variabales
-
-
-        public PlayerMovementComponent(Rigidbody _rb)
-        {
-            rb = _rb;
-        }
-
-    }*/
+{ 
     public class Player
     {
-        //private PlayerMovementComponent pmc;
         private StateController stateController;
         private InputActions input;
+        private CharacterMovementComponent cmc;
 
         //private PlayerData playerData;
         private GameObject playerObject;
         private Transform pTransform;
-        
-        public Rigidbody rb;
+        private InputManager inputManager;
         private CapsuleCollider pCollider;
         private PlayerCamera cam;
 
@@ -41,6 +27,8 @@ namespace Player
         private Vector2 mouseInput;
         private PlayerData playerData;
         public PlayerData PlayerData => playerData;
+        private MovementVariables pMoveData;
+        
         private Vector2 moveInput;
         public bool isGrounded;
         private LayerMask groundLayer;
@@ -63,8 +51,7 @@ namespace Player
 
         private float jumpCoolDown;
         private bool readyToJump;
-        private bool exitingSlope;
-        private bool doubleJump;
+
         
         
         // PlayerMovement variables (changable)
@@ -92,20 +79,24 @@ namespace Player
             GameManager.GlobalOnEnable += OnEnable;
             GameManager.GlobalOnDisable += OnDisable;
 
-            stateController = new StateController(this);  
-            
             // Load player Data from scriptable object
             playerData = Resources.Load<PlayerData>("PlayerData");
-            groundLayer = playerData.tGroundLayer;
+            playerObject = playerData.InstantiatePlayer();
+            
+            pMoveData = playerData.PMoveData;
+            pMoveData.RB = playerObject.GetComponent<Rigidbody>();
+            pMoveData.Orientation = playerObject.transform.Find("Orientation");
+            pMoveData.Collider = playerObject.GetComponentInChildren<CapsuleCollider>();
             
             // Instantiate player objects
-            playerObject = playerData.InstantiatePlayer();
-            orientation = playerObject.transform.Find("Orientation");
-            rb = playerObject.GetComponent<Rigidbody>();
-            pCollider = playerObject.GetComponentInChildren<CapsuleCollider>();
-            //pmc = new PlayerMovementComponent(rb);
+            groundLayer = playerData.GroundLayer;
+
+            inputManager = new InputManager();
+            
+            //cmc = new CharacterMovementComponent(rb);
             pTransform = playerObject.transform;
             
+            stateController = new StateController(pMoveData);  
             
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
@@ -113,42 +104,36 @@ namespace Player
 
         private void Awake()
         {
-            input = new InputActions();
+            // Subscribe to the Input Events
+            inputManager.OnJumpPressed += JumpInput;
+            inputManager.OnCrouchPressed += CrouchInput;
+            inputManager.OnWalkPressed += WalkInput;
+            inputManager.MovementInput += MoveInput;
+            inputManager.MouseInput += SetMouseInput;
             
-            rb.freezeRotation = true;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-
-            // Attach functions to input
-            input.Player.MouseXY.performed += SetMouse;
-            input.Player.MouseXY.canceled += SetMouse;
-            input.Player.Movement.started += MoveInput;
-            input.Player.Movement.performed += MoveInput;
-            input.Player.Movement.canceled += MoveInput;
-            input.Player.Crouch.started += Crouch;
-            input.Player.Crouch.canceled += Crouch;
-            input.Player.Jump.started += Jump;
-            input.Player.Jump.canceled += Jump;
+            pMoveData.RB.freezeRotation = true;
+            pMoveData.RB.interpolation = RigidbodyInterpolation.Interpolate;
+            pMoveData.RB.collisionDetectionMode = CollisionDetectionMode.Continuous;
 
             InitPlayerVariables();
         }
 
         private void InitPlayerVariables()
         {
-            playerRadius = pCollider.radius;
-            playerHeight = pCollider.height;
+            playerRadius = pMoveData.Collider.radius;
+            playerHeight = pMoveData.Collider.height;
             playerHalfHeight = playerHeight / 2;
             startYScale = playerObject.transform.localScale.y;
         }
 
         private void OnEnable()
         {
-            input.Enable();
+            //input.Enable();
         }
 
         private void OnDisable()
         {
-            input.Disable();
+            //input.Disable();
         }
 
         private void Start()
@@ -156,14 +141,23 @@ namespace Player
             
         }
 
+        private void WalkInput()
+        {
+            
+        }
+
+        private void SetMouseInput(Vector2 _value)
+        {
+            mouseInput = _value;
+        }
+
         private void Update()
         {
             // Grounded check
             // done with CheckCapsule because raycast was very buggy on a little uneven terrain
-            Vector3 groundStart = pCollider.bounds.center;
-            Vector3 groundEnd = new (pCollider.bounds.center.x, pCollider.bounds.min.y, pCollider.bounds.center.z);
+            Vector3 groundStart = pMoveData.Collider.bounds.center;
+            Vector3 groundEnd = new (pMoveData.Collider.bounds.center.x, pMoveData.Collider.bounds.min.y, pMoveData.Collider.bounds.center.z);
             isGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, groundLayer);
-            Debug.Log(doubleJump);
             //Debug.Log(isGrounded);
             
             
@@ -174,15 +168,11 @@ namespace Player
             
             // Update the state controller
             stateController.Update();
-            
-            
-            // MOVE THIS TO A STATE PLS
-            LedgeGrab();
-            
+
             if (isGrounded) 
             { 
                 Debug.Log("is Grounded");
-                rb.drag = groundDrag;
+                pMoveData.RB.drag = groundDrag;
                 //exitingSlope = false;
                 readyToJump = true;
                 coyoteTimeCounter = coyoteTime;
@@ -190,14 +180,14 @@ namespace Player
             else
             {
                 coyoteTimeCounter -= Time.deltaTime;
-                rb.drag = airDrag;
+                pMoveData.RB.drag = airDrag;
             }
         }
         private void LedgeGrab()
         {
             // Check for wall
             RaycastHit wallHit;
-            var bounds = pCollider.bounds;
+            var bounds = pMoveData.Collider.bounds;
             Vector3 point1 = bounds.center;
             // point 2 should be lower but not to the ground (we do a separate check for the ground (or if we can split up the complete capsule we can use that),
             // that will be a check to step up certain height ledges)
@@ -207,7 +197,6 @@ namespace Player
             // If there is a wall, raycast for ledgedetection
             if (Physics.CapsuleCast(point1, point2, .1f, orientation.forward, out wallHit, 1f, groundLayer))  //Physics.Raycast(pTransform.position + Vector3.up, orientation.forward, out wallHit, 1f, groundLayer))
             {
-                //Debug.Log(wallHit.collider);
                 Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
                 RaycastHit capsuleHit;
                 // NEED TO FIGURE OUT, CAPSULE CAST TO SEE IF THERE IS ENOUGH SPACE FOR THE ENTIRE PLAYER
@@ -224,78 +213,76 @@ namespace Player
                     GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, vaultSpeed));
                 }
             }
-            else
-            {
-                //Debug.Log("No Wall");
-            }
         }
 
-        private IEnumerator LerpToVaultPos(Vector3 _targetPos, float duration)
+        private IEnumerator LerpToVaultPos(Vector3 _targetPos, float _duration)
         {
             float time = 0;
             Vector3 startPos = pTransform.position;
             Vector3 targetPos = new (_targetPos.x, _targetPos.y + playerHalfHeight, _targetPos.z);
-            while (time < duration)
+            while (time < _duration)
             {
                 // move the player to the targetpos
-                rb.MovePosition(Vector3.Lerp(startPos, targetPos, time / duration));
+                pMoveData.RB.MovePosition(Vector3.Lerp(startPos, targetPos, time / _duration));
                 time += Time.deltaTime;
                 yield return null;
             }
             // Make sure the player is at the target pos at the end (lerp isn't exact)
-            rb.MovePosition(targetPos);
+            pMoveData.RB.MovePosition(targetPos);
         }
 
         private void FixedUpdate()
         {
             stateController.FixedUpdate();
-            //PlayerMove();
+            // MOVE THIS TO A STATE PLS
+            //LedgeGrab();
+            
+            PlayerMove();
         }
 
         public void PlayerMove()
         {
             moveDirection = orientation.forward * moveInput.y + orientation.right * moveInput.x;
 
-            if (OnSlope() && !exitingSlope)
+            if (OnSlope() && !pMoveData.ExitingSlope)
             {
-                rb.AddForce(GetSlopeMovementDirection() * (CurrentMoveSpeed * 20f), ForceMode.Force);
+                pMoveData.RB.AddForce(GetSlopeMovementDirection() * (CurrentMoveSpeed * 20f), ForceMode.Force);
 
-                if (rb.velocity.y > 0)
+                if (pMoveData.RB.velocity.y > 0)
                 {
-                    rb.AddForce(Vector3.down * 100, ForceMode.Force);
+                    pMoveData.RB.AddForce(Vector3.down * 100, ForceMode.Force);
                 }
             }
             
             if (isGrounded && !OnSlope())
-                rb.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f), ForceMode.Force);
+                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f), ForceMode.Force);
             else if (!isGrounded)
-                rb.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
+                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * airMultiplier), ForceMode.Force);
 
-            rb.useGravity = !OnSlope();
-            //Debug.Log(OnSlope().ToString());
-            //Debug.Log(rb.velocity.magnitude);
+            pMoveData.RB.useGravity = !OnSlope();
         }
 
         private void SpeedControl()
         {
-            if (OnSlope() && !exitingSlope)
+            if (OnSlope() && !pMoveData.ExitingSlope)
             {
-                if (rb.velocity.magnitude > CurrentMoveSpeed)
+                if (pMoveData.RB.velocity.magnitude > CurrentMoveSpeed)
                 {
-                    rb.velocity = rb.velocity.normalized * CurrentMoveSpeed;
+                    pMoveData.RB.velocity = pMoveData.RB.velocity.normalized * CurrentMoveSpeed;
                 }
             }
             else
             {
-                Vector3 flatVel = new (rb.velocity.x, 0f, rb.velocity.z);
+                Vector3 flatVel = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
 
                 if (flatVel.magnitude > CurrentMoveSpeed)
                 {
                     Vector3 limitedVel = flatVel.normalized * CurrentMoveSpeed;
-                    rb.velocity = new (limitedVel.x, rb.velocity.y, limitedVel.z);
+                    pMoveData.RB.velocity = new (limitedVel.x, pMoveData.RB.velocity.y, limitedVel.z);
                 }
             }
         }
+        
         private Vector3 GetSlopeMovementDirection()
         {
             return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
@@ -306,59 +293,68 @@ namespace Player
             mouseInput = value.ReadValue<Vector2>();
         }
 
-        private void MoveInput(InputAction.CallbackContext value)
+        private void MoveInput(Vector2 _value)
         {
-            moveInput = value.ReadValue<Vector2>();
+            moveInput = _value;
         }
 
-        private void Jump(InputAction.CallbackContext value)
+        private void JumpInput(bool _value)
         {
-            //Debug.Log(value.ReadValueAsButton());    
-            if (coyoteTimeCounter > 0f && value.ReadValueAsButton())
+            if (coyoteTimeCounter > 0f && _value)
             {
-                if (isGrounded || doubleJump)
+                if (isGrounded || pMoveData.CanDoubleJump)
                 {
                     readyToJump = false;
                     PerformJump();
 
-                    doubleJump = !doubleJump;
+                    pMoveData.CanDoubleJump = !pMoveData.CanDoubleJump;
                     
-                    // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP ETC
+                    // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP AND COYOTETIME
                     // SLOPE JUMPING WILL BE ENABLED THIS WAY
+                    // THIS DOESNT WORK BECAUSE THE SYSTEM ISNT RESETTING THE ISEXETING SLOPE VAR
                     // PROBS BEST WAY IS VIA THE STATE MACHINE
                     //ResetJump();
                 }
             }
 
-            if (!value.ReadValueAsButton())
+            if (!_value)
             {
+                // THIS NEEDS TO MOVE I THINK :)
                 coyoteTimeCounter = 0f;
             }
         }
 
-        private void Crouch(InputAction.CallbackContext value)
+        private void CrouchInput()
         {
-            if (value.ReadValueAsButton())
+            if (true)
             {
                 pTransform.localScale = new(pTransform.localScale.x, crouchYScale, pTransform.localScale.z);
 
-                rb.AddForce(Vector3.down, ForceMode.Impulse);
+                // LERP THE SCALE FOR SMOOTHER CROUCH
+                pMoveData.RB.AddForce(Vector3.down, ForceMode.Impulse);
+
+                GameManager.Instance.StartCoroutine(HandleCrouch(crouchYScale, .2f));
             }
             else
             {
                 pTransform.localScale = new(pTransform.localScale.x, startYScale, pTransform.localScale.z);
+                GameManager.Instance.StartCoroutine(HandleCrouch(startYScale, .2f));
             }
         }
 
-        private int maxBounces = 5;
-        private float skinWidth = .015f;
-        private Vector3 CollideAndSlide(Vector3 _vel, Vector3 _startPos, int _depth)
+        private IEnumerator HandleCrouch(float _targetHeight, float _duration)
         {
-            if (_depth >= maxBounces) { return Vector3.zero; }
-            
-            return _vel;
-            
-            
+            float time = 0;
+            Vector3 targetHeight = new(pTransform.localScale.x, _targetHeight, pTransform.localScale.z);
+            while (time < _duration)
+            {
+                // Lerp the playerScale to the targetHeight
+                pTransform.localScale = Vector3.Lerp(pTransform.localScale, targetHeight, time / _duration);
+                time += Time.deltaTime;
+                yield return null;
+            }
+            // Make sure the player is at the target Height at the end
+            pTransform.localScale = targetHeight;
         }
 
         private bool OnSlope()
@@ -374,12 +370,12 @@ namespace Player
 
         private void PerformJump()
         {
-            exitingSlope = true;
-            rb.velocity = new (rb.velocity.x, 0f, rb.velocity.z);
-            rb.AddForce(Vector3.up * (doubleJump ? doubleJumpForce : jumpForce), ForceMode.Impulse);
+            pMoveData.ExitingSlope = true;
+            pMoveData.RB.velocity = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
+            pMoveData.RB.AddForce(Vector3.up * (pMoveData.CanDoubleJump ? doubleJumpForce : jumpForce), ForceMode.Impulse);
         }
 
-        private void ResetJump()
+        /*private void ResetJump()
         {
             if (isGrounded)
             {
@@ -388,6 +384,6 @@ namespace Player
                 doubleJump = false;
                 exitingSlope = false;
             }
-        }
+        }*/
     }
 }

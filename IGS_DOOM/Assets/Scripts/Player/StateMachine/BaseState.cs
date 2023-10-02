@@ -1,14 +1,16 @@
+using Player;
 using UnityEngine;
 
 namespace FSM
 { 
     public abstract class BaseState
     {
-        public StateController sc;
-
-        public void OnStateEnter(StateController _sc)
+        protected StateController sc;
+        protected MovementVariables pData;
+        public void OnStateEnter(StateController _sc, MovementVariables _pData)
         {
             sc = _sc;
+            pData = _pData;
             OnEnter();
         }
         

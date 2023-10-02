@@ -7,14 +7,14 @@ namespace FSM
         protected override void OnEnter()
         {
             // Set movement data like movespeed
-            sc.player.CurrentMoveSpeed = sc.player.RunSpeed;
+            pData.CurrentMoveSpeed = pData.RunSpeed;
         }
 
         protected override void OnUpdate()
         {
             base.OnUpdate();
             //Debug.Log("RunStateUpdate");
-            if (sc.player.rb.velocity.magnitude < .1f)
+            if (pData.RB.velocity.magnitude < .1f)
             {
                 sc.ChangeState(sc.IdleState);
             }

@@ -1,7 +1,13 @@
-﻿using UnityEngine;
+﻿using Player;
+using UnityEngine;
 
 namespace FSM
 {
+    // Hierarchical State machine
+    // I looked into Pushdown automata but this isnt really neceserry for this system
+    // https://github.com/TS696/PdStateMachine/tree/master << only real recourse i found (in unity)
+    // For maybe a complexer system that needs state history it might be a better fit
+
     public class StateController
     {
         public BaseState currentState;
@@ -17,14 +23,23 @@ namespace FSM
         public InAirState InAirState = new();
         public InAIrJumpState InAIrJumpState = new();
         public LedgeGrabState LedgeGrabState = new();
+
+        public InputManager input;
         
+        private MovementVariables playerData;
         
-        public Player.Player player;
-        
-        public StateController(Player.Player _player)
+        public StateController(MovementVariables _pData)
         {
-            player = _player;
+            playerData = _pData;
+            input = new InputManager();
             ChangeState(GroundedState);
+            input.OnCrouchPressed += OnCrouchPressed;
+            
+        }
+
+        private void OnCrouchPressed()
+        {
+            
         }
 
         public void Update()
@@ -44,7 +59,7 @@ namespace FSM
             currentState?.OnStateExit();
 
             currentState = _newState;
-            currentState.OnStateEnter(this);
+            currentState.OnStateEnter(this, playerData);
         }
     }
 }
