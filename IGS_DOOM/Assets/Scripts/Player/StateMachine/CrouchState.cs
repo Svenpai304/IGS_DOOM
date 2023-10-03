@@ -1,25 +1,35 @@
-﻿namespace FSM
+﻿using UnityEngine;
+using Player;
+
+namespace FSM
 {
-    public class CrouchState : GroundedState
+    public class CrouchState : IBaseState
     {
-        protected override void OnEnter()
+        private CMC cmc;
+        public void OnStateEnter(IStateData _data)
         {
+            cmc = _data.SharedData.Get<CMC>("cmc");
             cmc.Crouch();
         }
 
-        protected override void OnUpdate()
+        public void OnStateUpdate(IStateData _data)
         {
-            
+            if (!_data.SharedData.Get<InputData>("input").IsCrouching)
+            {
+                SwitchState(StateController.RunState);
+            }
         }
 
-        protected override void OnFixedUpdate()
+        public void OnStateFixedUpdate(IStateData _data)
         {
-            
+            cmc.PlayerMove(_data.SharedData.Get<InputData>("input").MoveInput);
         }
 
-        protected override void OnExit()
+        public void OnStateExit(IStateData _data)
         {
             cmc.UnCrouch();
         }
+        
+        public StateEvent SwitchState { get; set; }
     }
 }

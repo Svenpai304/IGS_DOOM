@@ -1,27 +1,35 @@
-﻿using UnityEngine;
-    
+﻿using Player;
+using UnityEngine;
+
 namespace FSM
 {
-    public class JumpState : GroundedState
+    public class JumpAction : IBaseState
     {
-        protected override void OnEnter()
+        public void OnStateEnter(IStateData _data)
         {
-            cmc.Jump();
+            var jumpData = _data.SharedData.Get<MovementVariables>("Movement");
+            Debug.Log("Jump");
+            jumpData.ExitingSlope = true;
+            jumpData.RB.velocity = new (jumpData.RB.velocity.x, 0f, jumpData.RB.velocity.z);
+            jumpData.RB.AddForce(Vector3.up * jumpData.JumpForce, ForceMode.Impulse);
         }
 
-        protected override void OnUpdate()
+        public void OnStateUpdate(IStateData _data)
         {
-
+            if (_data.SharedData.Get<MovementVariables>("Movement").IsGrounded)
+            {
+                SwitchState(StateController.RunState);
+            }
         }
 
-        protected override void OnFixedUpdate()
+        public void OnStateFixedUpdate(IStateData _data)
         {
-            
         }
 
-        protected override void OnExit()
+        public void OnStateExit(IStateData _data)
         {
-            
         }
+
+        public StateEvent SwitchState { get; set; }
     }
 }

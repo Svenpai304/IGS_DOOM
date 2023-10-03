@@ -12,9 +12,9 @@ namespace Player
         public GameObject Camera;
 
         [FormerlySerializedAs("PlayerMovementData")] [SerializeField]
-        private MovementVariables pMoveData;
+        private MoveVar pMoveData;
 
-        public MovementVariables PMoveData { get => pMoveData; set => pMoveData = value; }
+        public MoveVar PMoveData { get => pMoveData; set => pMoveData = value; }
         public GameObject InstantiatePlayer()
         {
             return Instantiate(Player);
@@ -27,8 +27,10 @@ namespace Player
     }
 
     [Serializable]
-    public class MovementVariables
+    public class MoveVar
     {
+        // CREATE NEW DATA TYPES ONLY FOR SPECIFIC STUFF
+        
         [Header("Move Speed")]
         public float AirDrag = 0f;
         public float GroundDrag = 5f;
@@ -70,12 +72,7 @@ namespace Player
         public Rigidbody RB;
         [HideInInspector]
         public bool ExitingSlope;
-        [HideInInspector]
-        public bool CanDoubleJump;
-        [HideInInspector]
-        public bool IsCrouching = false;
-        [HideInInspector]
-        public bool IsWalking = false;
-
+        [FormerlySerializedAs("CanDoubleJump")] [HideInInspector]
+        public bool IsDoubleJumpUnlocked;
     }
 }

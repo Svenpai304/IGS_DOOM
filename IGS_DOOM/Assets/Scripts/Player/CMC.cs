@@ -61,6 +61,7 @@ namespace Player
         
         public void Update()
         {
+            Debug.Log(currentMoveSpeed);
             // Grounded check
             // done with CheckCapsule because raycast was very buggy on a little uneven terrain
             var bounds = pMoveData.Collider.bounds;
@@ -132,7 +133,7 @@ namespace Player
                 if (isGrounded || pMoveData.CanDoubleJump)
                 {
                     isReadyToJump = false;
-                    PerformJump();
+                    //PerformJump();
 
                     pMoveData.CanDoubleJump = !pMoveData.CanDoubleJump;
         
@@ -149,13 +150,6 @@ namespace Player
                 // THIS NEEDS TO MOVE I THINK :)
                 coyoteTimeCounter = 0f;
             }*/
-        }
-
-        private void PerformJump()
-        {
-            pMoveData.ExitingSlope = true;
-            pMoveData.RB.velocity = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
-            pMoveData.RB.AddForce(Vector3.up * pMoveData.JumpForce, ForceMode.Impulse);
         }
 
         private void ResetJump()

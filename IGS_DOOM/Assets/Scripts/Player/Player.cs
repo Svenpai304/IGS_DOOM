@@ -5,12 +5,24 @@ using Unity.VisualScripting;
 using Weapons;
 
 namespace Player
-{ 
-    public class Player : IWeaponHolder
+{
+    public struct InputData
     {
+        public bool IsWalking;
+        public bool IsRunning;
+        public bool IsCrouching;
+        public InputAction Jump;
+        public Vector2 MoveInput;
+    }
+    
+    public class Player : IWeaponHolder, IStateData
+    {
+        public ScratchPad SharedData { get; }
         private StateController stateController;
         private InputActions input;
-        private CharacterMovementComponent cmc;
+        private CMC cmc;
+
+        private InputData inputData;
         
         //private PlayerData playerData;
         public Transform WeaponTransform { get; set; }
@@ -25,7 +37,7 @@ namespace Player
         private PlayerData playerData;
         private WeaponCarrier weapons;
         public PlayerData PlayerData => playerData;
-        private MovementVariables pMoveData;
+        private MoveVar pMoveData;
         
         private Vector2 moveInput;
 
@@ -50,16 +62,18 @@ namespace Player
             pMoveData.pTransform = playerObject.transform;
             
             // Instantiate player objects
-
-            cmc = new CharacterMovementComponent(playerData);
-            
-            stateController = new StateController(cmc);  
-            
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
             CamTransform = camObj.transform;
             WeaponTransform = camObj.transform.Find("WeaponHolder");
             weapons = new WeaponCarrier(this);
+            cmc = new CMC(playerData);
+
+            SharedData = new ScratchPad();
+            // Set shared data variables
+            //SharedData.Set("Movement", pMoveData);
+            SharedData.Set("cmc", cmc);
+            stateController = new StateController(this);  
         }
 
         private void Awake()
@@ -72,7 +86,8 @@ namespace Player
             input.Player.Movement.started += MoveInput;
             input.Player.Movement.performed += MoveInput;
             input.Player.Movement.canceled += MoveInput;
-            input.Player.Jump.started += JumpInput;
+            inputData.Jump = input.Player.Jump;
+            //input.Player.Jump.canceled += JumpInput;
             input.Player.Crouch.started += CrouchInput;
             input.Player.Walk.started += WalkInput;
             input.Player.Walk.canceled += WalkInput;
@@ -147,16 +162,7 @@ namespace Player
 
         private void WalkInput(InputAction.CallbackContext callbackContext)
         {
-            if (callbackContext.ReadValueAsButton())
-            {
-                pMoveData.IsWalking = true;
-                stateController.ChangeState(stateController.WalkState);
-            }
-            else
-            {
-                pMoveData.IsWalking = false;
-                stateController.ChangeState(stateController.RunState);
-            }
+            inputData.IsWalking = callbackContext.ReadValueAsButton();
         }
 
         private void MouseInput(InputAction.CallbackContext callbackContext)
@@ -166,49 +172,37 @@ namespace Player
 
         private void MoveInput(InputAction.CallbackContext callbackContext)
         {
-            moveInput = callbackContext.ReadValue<Vector2>();
+            inputData.MoveInput = callbackContext.ReadValue<Vector2>();
         }
         
-        private void JumpInput(InputAction.CallbackContext callbackContext)
+        /*private void JumpInput(InputAction.CallbackContext callbackContext)
         {
-            if (callbackContext.ReadValueAsButton() && !pMoveData.IsCrouching)
-            {
-                // You dont want to limit the jump action because of the double jump
-                stateController.ChangeState(stateController.JumpState);
-            }
-            else
-            {
-                pMoveData.IsCrouching = false;
-                stateController.ChangeState(stateController.RunState);
-            }
-        }
+            inputData.JumpPressed = callbackContext.ReadValueAsButton();
+            /*Debug.Log("Jump Input = " + callbackContext.ReadValueAsButton());
+            Debug.Log("input data jump = " + inputData.JumpPressed);#1#
+        }*/
         
         private void CrouchInput(InputAction.CallbackContext callbackContext)
         {
-            if (callbackContext.ReadValueAsButton() && !pMoveData.IsCrouching)
+            if (callbackContext.ReadValueAsButton())
             {
-                pMoveData.IsCrouching = true;
-                stateController.ChangeState(stateController.CrouchState);
-            }
-            else
-            {
-                pMoveData.IsCrouching = false;
-                stateController.ChangeState(stateController.RunState);
+                inputData.IsCrouching = !inputData.IsCrouching;
             }
         }
         
         private void Update()
         {
             cam.UpdateCamera(mouseInput);
+            SharedData.Set("input", inputData);
+            SharedData.Set("Movement", pMoveData);
+            stateController.Update();
         }
 
         private void FixedUpdate()
         {
-            if (!pMoveData.IsGrounded)
-            {
-                stateController.ChangeState(stateController.InAirState);
-            }
-            cmc.PlayerMove(moveInput);
+            stateController.FixedUpdate();
         }
+
+        
     }
 }

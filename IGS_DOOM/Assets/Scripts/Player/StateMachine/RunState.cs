@@ -1,28 +1,45 @@
-﻿using UnityEngine;
+﻿using Player;
+using UnityEngine;
 
 namespace FSM
 {
-    public class RunState : GroundedState
+    public class RunState : IBaseState
     {
-        protected override void OnEnter()
+        private CMC cmc;
+        public void OnStateEnter(IStateData _data)
         {
+            cmc = _data.SharedData.Get<CMC>("cmc");
             cmc.Run();
         }
 
-        protected override void OnUpdate()
+        public void OnStateUpdate(IStateData _data)
         {
-            base.OnUpdate();
-            //Debug.Log("RunStateUpdate");
+            if (_data.SharedData.Get<InputData>("input").IsWalking)
+            {
+                SwitchState(StateController.WalkState);
+            }
+
+            if (_data.SharedData.Get<InputData>("input").IsCrouching)
+            {
+                SwitchState(StateController.CrouchState);
+            }
+
+            if (_data.SharedData.Get<InputData>("input").Jump.WasPressedThisFrame())
+            {
+                SwitchState(StateController.JumpState);
+            }
         }
 
-        protected override void OnFixedUpdate()
+        public void OnStateFixedUpdate(IStateData _data)
         {
-            base.OnFixedUpdate();
+            cmc.PlayerMove(_data.SharedData.Get<InputData>("input").MoveInput);
         }
 
-        protected override void OnExit()
+        public void OnStateExit(IStateData _data)
         {
             
         }
+        
+        public StateEvent SwitchState { get; set; }
     }
 }

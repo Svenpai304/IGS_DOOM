@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2568835293332179167}
   - component: {fileID: 8727306496304339458}
   - component: {fileID: 8586735250833413117}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7997176823313640230}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PistolViewmodel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
