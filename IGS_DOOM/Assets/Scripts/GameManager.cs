@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private LayerMask damageableLayer;
+
     public static GameManager Instance { get; private set; }
     public delegate void Action();
     public static Action GlobalAwake;
@@ -18,7 +20,8 @@ public class GameManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(this); }
         else { Instance = this; }
-        
+
+        _ = new EnemyManager(damageableLayer);
         var a = new Player.Player();
         GlobalAwake?.Invoke();
     }
