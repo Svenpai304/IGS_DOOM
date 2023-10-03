@@ -26,4 +26,22 @@ public class FireBehaviour : ScriptableObject
             component.Fire(_weapon);
         }
     }
+
+    public List<UpgradeableValue> GetUpgradeableValues()
+    {
+        List<UpgradeableValue> values = new List<UpgradeableValue>();
+
+        foreach(var value in fireControlComponent.allUpgradeableValues)
+        {
+            values.Add(value);
+        }
+        foreach (var component in FireComponents)
+        {
+            foreach(var value in component.allUpgradeableValues)
+            {
+                values.Add(value);
+            }
+        }
+        return values;
+    }
 }

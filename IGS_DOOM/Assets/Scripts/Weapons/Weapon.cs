@@ -22,6 +22,7 @@ public class Weapon : ScriptableObject, IWeapon
     public WeaponAction OnFireReleased;
     public WeaponAction OnAltFirePressed;
     public WeaponAction OnAltFireReleased;
+
     public void FirePressed()
     {
         OnFirePressed?.Invoke(this);
@@ -85,4 +86,18 @@ public class Weapon : ScriptableObject, IWeapon
         altFires[Data.CurrentMod - 1].OnSwitchIn(this);
     }
 
+    private void CollectUpgradeableValues()
+    {
+        for(int i = 0; i < altFires.Length; i++)
+        {
+            foreach(var value in altFires[i].GetUpgradeableValues())
+            {
+                if (value.IsUpgradeable)
+                {
+                    Data.Upgradeables[i][value.UpgradeIndex] = value;
+                    value.SetUpgradeLevel(Data.UpgradeLevels[i][value.UpgradeIndex]);
+                }
+            }
+        }
+    }
 }

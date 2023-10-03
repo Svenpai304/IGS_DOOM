@@ -21,14 +21,11 @@ public class WeaponData
     public bool Unlocked;
 
     public bool[] ModsUnlocked;
+    [HideInInspector] public UpgradeableValue[][] Upgradeables;
+    [HideInInspector] public int[][] UpgradeLevels;
 
-    public int Mod1Upgrade1Level;
-    public int Mod1Upgrade2Level;
-    public int Mod1Upgrade3Level;
+    public int[] Mod1UpgradeLevels = new int[3];
+    public int[] Mod2UpgradeLevels = new int[3];
     public bool Mod1MasteryUnlocked;
-
-    public int Mod2Upgrade1Level;
-    public int Mod2Upgrade2Level;
-    public int Mod2Upgrade3Level;
     public bool Mod2MasteryUnlocked;
 }
