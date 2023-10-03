@@ -3,23 +3,46 @@ using UnityEngine;
 
 namespace FSM
 {
-    public class JumpAction : IBaseState
+    public class JumpState : IBaseState
     {
+        private bool isJumping;
+        private bool canJumpAgain;
+        
         public void OnStateEnter(IStateData _data)
         {
-            var jumpData = _data.SharedData.Get<MovementVariables>("Movement");
-            Debug.Log("Jump");
-            jumpData.ExitingSlope = true;
-            jumpData.RB.velocity = new (jumpData.RB.velocity.x, 0f, jumpData.RB.velocity.z);
-            jumpData.RB.AddForce(Vector3.up * jumpData.JumpForce, ForceMode.Impulse);
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
+            // Perform Jump
+            canJumpAgain = true;
+            isJumping = true;
+            Jump(movData);
         }
-
+        
         public void OnStateUpdate(IStateData _data)
         {
-            if (_data.SharedData.Get<MovementVariables>("Movement").IsGrounded)
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
+            var inputData = _data.SharedData.Get<InputData>("input");
+            // This is necessary because you are still grounded for a frame or two, so this ensures you stay
+            // in the JumpState until you are actually grounded again
+            if (!movData.IsGrounded) { isJumping = false; }
+            
+            if (inputData.Jump.WasPressedThisFrame() && movData.IsDoubleJumpUnlocked && canJumpAgain)
+            {
+                // Perform Double Jump
+                canJumpAgain = false;
+                isJumping = true;
+                Jump(movData);
+            }
+            if (_data.SharedData.Get<MoveVar>("Movement").IsGrounded && !isJumping)
             {
                 SwitchState(StateController.RunState);
             }
+        }
+
+        private void Jump(MoveVar _jumpData)
+        {
+            _jumpData.ExitingSlope = true;
+            _jumpData.RB.velocity = new (_jumpData.RB.velocity.x, 0f, _jumpData.RB.velocity.z);
+            _jumpData.RB.AddForce(Vector3.up * _jumpData.JumpForce, ForceMode.Impulse);
         }
 
         public void OnStateFixedUpdate(IStateData _data)
@@ -28,6 +51,7 @@ namespace FSM
 
         public void OnStateExit(IStateData _data)
         {
+            canJumpAgain = true;
         }
 
         public StateEvent SwitchState { get; set; }

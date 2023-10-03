@@ -4,19 +4,17 @@ using UnityEngine;
 
 namespace Player
 {
-    public class CharacterMovementComponent
+    public class CMC
     {
         private Vector3 moveDirection;
         
-        private MovementVariables pMoveData;
+        private MoveVar pMoveData;
         private PlayerData pData;
 
         private bool isGrounded;
 
         private RaycastHit slopeHit;
-
         
-
         private float coyoteTimeCounter;
         
         // can initialize from constructor
@@ -37,7 +35,7 @@ namespace Player
         private float coyoteTime = 3.2f;
         private float crouchYScale = .5f;
 
-        public CharacterMovementComponent(PlayerData _pData)
+        public CMC(PlayerData _pData)
         {
             pData = _pData;
             pMoveData = pData.PMoveData;
@@ -61,20 +59,19 @@ namespace Player
         
         public void Update()
         {
-            Debug.Log(currentMoveSpeed);
             // Grounded check
             // done with CheckCapsule because raycast was very buggy on a little uneven terrain
             var bounds = pMoveData.Collider.bounds;
             Vector3 groundStart = bounds.center;
-            Vector3 groundEnd = new (bounds.center.x, bounds.min.y - .2f, bounds.center.z);
-            isGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, pData.GroundLayer);
+            Vector3 groundEnd = new (bounds.center.x, bounds.min.y, bounds.center.z);
+            pMoveData.IsGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, pData.GroundLayer);
             Debug.Log(isGrounded);
             // clamp the speed before applying it to the player
             SpeedControl();
             
             // Update the state controller
 
-            if (isGrounded) 
+            if (pMoveData.IsGrounded) 
             {
                 pMoveData.RB.drag = pMoveData.GroundDrag;
                 //exitingSlope = false;
@@ -130,12 +127,12 @@ namespace Player
         {
             if (coyoteTimeCounter > 0f)
             {
-                if (isGrounded || pMoveData.CanDoubleJump)
+                if (pMoveData.IsGrounded || pMoveData.IsDoubleJumpUnlocked)
                 {
                     isReadyToJump = false;
                     //PerformJump();
 
-                    pMoveData.CanDoubleJump = !pMoveData.CanDoubleJump;
+                    pMoveData.IsDoubleJumpUnlocked = !pMoveData.IsDoubleJumpUnlocked;
         
             // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP AND COYOTETIME
             // SLOPE JUMPING WILL BE ENABLED THIS WAY
@@ -154,11 +151,11 @@ namespace Player
 
         private void ResetJump()
         {
-            if (isGrounded)
+            if (pMoveData.IsGrounded)
             {
                 pMoveData.ExitingSlope = false;
                 isReadyToJump = true;
-                pMoveData.CanDoubleJump = false;
+                pMoveData.IsDoubleJumpUnlocked = false;
             }
         }
 
@@ -246,14 +243,18 @@ namespace Player
         {
             // Calculate step distance based on the magnitude of the velocity
             // The faster you go the further away it will cast
-            // This gives a smoother feel
             return pMoveData.RB.velocity.magnitude / 10;
         }
 
         public void PlayerMove(Vector2 _moveInput)
         {
+            // Limit the speed from the player
+            SpeedControl();
+            
+            // Get the direction to move in
             moveDirection = pMoveData.Orientation.forward * _moveInput.y + pMoveData.Orientation.right * _moveInput.x;
 
+            // Move Player
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
                 pMoveData.RB.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
@@ -264,9 +265,9 @@ namespace Player
                 }
             }
             
-            if (isGrounded && !OnSlope())
+            if (pMoveData.IsGrounded && !OnSlope())
                 pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
-            else if (!isGrounded)
+            else if (!pMoveData.IsGrounded)
                 pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
 
             pMoveData.RB.useGravity = !OnSlope();
