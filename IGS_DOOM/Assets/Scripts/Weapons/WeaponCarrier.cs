@@ -10,7 +10,7 @@ public class WeaponCarrier
 {
     public List<IWeapon> Weapons = new List<IWeapon>();
     public IWeapon CurrentWeapon;
-    public int CurrentIndex;
+    public int CurrentIndex = 0;
     public int PreviousIndex;
 
     private IWeaponHolder player;
@@ -23,7 +23,6 @@ public class WeaponCarrier
         {
             Weapons.Add(weaponsData.Weapons[i]);
             Weapons[i].Data.Owner = player;
-            Debug.Log("Added weapon " + i);
         }
         SwitchWeapon(0);
     }
@@ -35,7 +34,7 @@ public class WeaponCarrier
         CurrentIndex = i;
         Weapons[PreviousIndex].OnSwitchOut();
         CurrentWeapon.OnSwitchIn();
-
+        Debug.Log(CurrentIndex);
     }
 
     public void SwitchWeaponMod()
@@ -43,13 +42,29 @@ public class WeaponCarrier
         CurrentWeapon.SwitchMod();
     }
 
-    public void SwitchToNextWeapon()
+    public void SwitchWeaponForward()
     {
         for(int i = CurrentIndex + 1; i != CurrentIndex; i++)
         {
             if(i >= Weapons.Count)
             {
                 i = 0;
+            }
+            if (Weapons[i].Data.Unlocked)
+            {
+                SwitchWeapon(i);
+                return;
+            }
+        }
+    }
+
+    public void SwitchWeaponBackward()
+    {
+        for (int i = CurrentIndex - 1; i != CurrentIndex; i--)
+        {
+            if (i < 0)
+            {
+                i = Weapons.Count;
             }
             if (Weapons[i].Data.Unlocked)
             {

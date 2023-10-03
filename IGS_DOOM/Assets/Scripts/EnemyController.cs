@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnemyController : IDamageable
 {
-    private int health;
+    private int health = 20;
     private GameObject enemyObj;
 
     public EnemyController(GameObject _enemyObj)

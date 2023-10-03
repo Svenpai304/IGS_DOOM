@@ -96,7 +96,7 @@ namespace Player
             if (callbackContext.ReadValueAsButton() && isPreviousWeapon)
             {
                 isPreviousWeapon = false;
-                weapons.SwitchToNextWeapon();
+                weapons.SwitchWeaponForward();
             }
             else
             {
