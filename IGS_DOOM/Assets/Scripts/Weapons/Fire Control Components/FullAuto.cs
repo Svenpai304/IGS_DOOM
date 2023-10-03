@@ -27,7 +27,7 @@ public class FullAuto : FireControlComponent
         _weapon.OnFirePressed -= StartAuto;
         _weapon.OnFireReleased -= StopAuto;
         GameManager.GlobalFixedUpdate -= FixedUpdate;
-        interval = 0;
+        intervalTimer = 0;
     }
 
     private void FixedUpdate()

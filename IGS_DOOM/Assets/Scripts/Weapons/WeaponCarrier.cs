@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using Weapons;
 
 public class WeaponCarrier
 {
@@ -12,9 +13,9 @@ public class WeaponCarrier
     public int CurrentIndex;
     public int PreviousIndex;
 
-    private Player.Player player;
+    private IWeaponHolder player;
 
-    public WeaponCarrier(Player.Player _player) 
+    public WeaponCarrier(IWeaponHolder _player) 
     {
         player = _player;
         var weaponsData = Resources.Load<WeaponsData>("WeaponsData");

@@ -11,28 +11,26 @@ namespace Player
         private MovementVariables pMoveData;
         private PlayerData pData;
 
-        public bool isGrounded;
+        private bool isGrounded;
 
         private RaycastHit slopeHit;
 
-        public float CurrentMoveSpeed = 7;
-
-
-
-        private float startYScale;
-        private float playerRadius;
+        
 
         private float coyoteTimeCounter;
         
         // can initialize from constructor
         private float playerHeight;
         private float playerHalfHeight;
+        private float playerRadius;
+        private float startYScale;
 
         private float jumpCoolDown;
-        private bool readyToJump;
+        private bool isReadyToJump;
 
         private bool isWalking;
         
+        private float currentMoveSpeed = 7;
         
         // PlayerMovement variables (changable)
 
@@ -79,7 +77,7 @@ namespace Player
             {
                 pMoveData.RB.drag = pMoveData.GroundDrag;
                 //exitingSlope = false;
-                readyToJump = true;
+                isReadyToJump = true;
                 coyoteTimeCounter = coyoteTime;
             }
             else
@@ -96,7 +94,7 @@ namespace Player
         
         public void Crouch()
         {
-            CurrentMoveSpeed = pMoveData.CrouchSpeed;
+            currentMoveSpeed = pMoveData.CrouchSpeed;
             
             var localScale = pMoveData.pTransform.localScale;
             localScale = new(localScale.x, crouchYScale, localScale.z);
@@ -108,7 +106,9 @@ namespace Player
 
         public void UnCrouch()
         {
-            CurrentMoveSpeed = pMoveData.RunSpeed;
+            // Need to check if you can Uncrouch, currently if you crouch under a object you will clip into its
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            currentMoveSpeed = pMoveData.RunSpeed;
             
             var localScale = pMoveData.pTransform.localScale;
             localScale = new(localScale.x, startYScale, localScale.z);
@@ -117,12 +117,12 @@ namespace Player
 
         public void Walk()
         {
-            CurrentMoveSpeed = pMoveData.WalkSpeed;
+            currentMoveSpeed = pMoveData.WalkSpeed;
         }
         
         public void Run()
         {
-            CurrentMoveSpeed = pMoveData.RunSpeed;
+            currentMoveSpeed = pMoveData.RunSpeed;
         }
         
         public void Jump()
@@ -131,7 +131,7 @@ namespace Player
             {
                 if (isGrounded || pMoveData.CanDoubleJump)
                 {
-                    readyToJump = false;
+                    isReadyToJump = false;
                     PerformJump();
 
                     pMoveData.CanDoubleJump = !pMoveData.CanDoubleJump;
@@ -163,7 +163,7 @@ namespace Player
             if (isGrounded)
             {
                 pMoveData.ExitingSlope = false;
-                readyToJump = true;
+                isReadyToJump = true;
                 pMoveData.CanDoubleJump = false;
             }
         }
@@ -201,6 +201,7 @@ namespace Player
 
             return false;
         }
+        
         public void LedgeGrab()
         {
             GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, pMoveData.VaultSpeed));
@@ -224,22 +225,35 @@ namespace Player
 
         private void StepUp()
         {
+            //Debug.DrawRay(pMoveData.StepUpMin.position, 
+            //    pMoveData.Orientation.TransformDirection(Vector3.forward) * CalculateStepDistance(), Color.green);
+            
+            // Make 3 rays, 1 straight and 2 at a 45 and -45 degree angle respectively
             Vector3[] directions =
             {
                 pMoveData.Orientation.TransformDirection(Vector3.forward),
                 pMoveData.Orientation.TransformDirection(1.5f, 0, 1),
                 pMoveData.Orientation.TransformDirection(-1.5f, 0, 1),
             };
+            
             foreach (var direction in directions)
             {
-                if (Physics.Raycast(pMoveData.StepUpMin.position, direction, .4f))
+                if (Physics.Raycast(pMoveData.StepUpMin.position, direction, CalculateStepDistance()))
                 {
-                    if (Physics.Raycast(pMoveData.StepUpMin.position, direction, .6f))
+                    if (Physics.Raycast(pMoveData.StepUpMin.position, direction, CalculateStepDistance()))
                     {
                         pMoveData.RB.position -= new Vector3(0f, -pMoveData.StepSmooth, 0f);
                     }
                 }
             }
+        }
+
+        private float CalculateStepDistance()
+        {
+            // Calculate step distance based on the magnitude of the velocity
+            // The faster you go the further away it will cast
+            // This gives a smoother feel
+            return pMoveData.RB.velocity.magnitude / 10;
         }
 
         public void PlayerMove(Vector2 _moveInput)
@@ -248,7 +262,7 @@ namespace Player
 
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
-                pMoveData.RB.AddForce(GetSlopeMovementDirection() * (CurrentMoveSpeed * 20f), ForceMode.Force);
+                pMoveData.RB.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
 
                 if (pMoveData.RB.velocity.y > 0)
                 {
@@ -257,9 +271,9 @@ namespace Player
             }
             
             if (isGrounded && !OnSlope())
-                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f), ForceMode.Force);
+                pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
             else if (!isGrounded)
-                pMoveData.RB.AddForce(moveDirection.normalized * (CurrentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
+                pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
 
             pMoveData.RB.useGravity = !OnSlope();
         }
@@ -268,18 +282,18 @@ namespace Player
         {
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
-                if (pMoveData.RB.velocity.magnitude > CurrentMoveSpeed)
+                if (pMoveData.RB.velocity.magnitude > currentMoveSpeed)
                 {
-                    pMoveData.RB.velocity = pMoveData.RB.velocity.normalized * CurrentMoveSpeed;
+                    pMoveData.RB.velocity = pMoveData.RB.velocity.normalized * currentMoveSpeed;
                 }
             }
             else
             {
                 Vector3 flatVel = new (pMoveData.RB.velocity.x, 0f, pMoveData.RB.velocity.z);
 
-                if (flatVel.magnitude > CurrentMoveSpeed)
+                if (flatVel.magnitude > currentMoveSpeed)
                 {
-                    Vector3 limitedVel = flatVel.normalized * CurrentMoveSpeed;
+                    Vector3 limitedVel = flatVel.normalized * currentMoveSpeed;
                     pMoveData.RB.velocity = new (limitedVel.x, pMoveData.RB.velocity.y, limitedVel.z);
                 }
             }

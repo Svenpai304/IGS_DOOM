@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Weapons;
 
 public class WeaponsData : ScriptableObject
 {
@@ -15,7 +16,7 @@ public class WeaponData
     public int Ammo;
 
     [HideInInspector] public int CurrentMod;
-    [HideInInspector] public Player.Player Owner;
+    [HideInInspector] public IWeaponHolder Owner;
 
     public bool Unlocked;
 

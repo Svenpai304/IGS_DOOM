@@ -44,7 +44,8 @@ public class Weapon : ScriptableObject, IWeapon
 
     public void OnSwitchIn()
     {
-        activeViewmodel = Instantiate(ViewmodelPrefab);
+        if (primaryFire == null) { return; }
+        activeViewmodel = Instantiate(ViewmodelPrefab, data.Owner.WeaponTransform);
         primaryFire.OnSwitchIn(this);
         if (Data.CurrentMod != 0)
         {
@@ -54,6 +55,7 @@ public class Weapon : ScriptableObject, IWeapon
 
     public void OnSwitchOut()
     {
+        if (primaryFire == null) { return; }
         Destroy(activeViewmodel);
         primaryFire.OnSwitchOut(this);
         if (Data.CurrentMod != 0)

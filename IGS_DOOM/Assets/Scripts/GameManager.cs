@@ -20,7 +20,6 @@ public class GameManager : MonoBehaviour
         else { Instance = this; }
         
         var a = new Player.Player();
-        weapons = new WeaponCarrier(a);
         GlobalAwake?.Invoke();
     }
 
@@ -63,4 +62,5 @@ public class GameManager : MonoBehaviour
     {
         GlobalFixedUpdate?.Invoke();
     }
+    
 }
