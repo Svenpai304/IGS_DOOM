@@ -12,12 +12,16 @@ public class WeaponCarrier
     public int CurrentIndex;
     public int PreviousIndex;
 
-    public WeaponCarrier() 
+    private Player.Player player;
+
+    public WeaponCarrier(Player.Player _player) 
     {
+        player = _player;
         var weaponsData = Resources.Load<WeaponsData>("WeaponsData");
         for(int i = 0; i < weaponsData.Weapons.Count; i++)
         {
             Weapons.Add(weaponsData.Weapons[i]);
+            Weapons[i].Data.Owner = player;
             Debug.Log("Added weapon " + i);
         }
         SwitchWeapon(0);

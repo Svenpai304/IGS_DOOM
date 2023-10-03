@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         else { Instance = this; }
         
         var a = new Player.Player();
-        weapons = new WeaponCarrier();
+        weapons = new WeaponCarrier(a);
         GlobalAwake?.Invoke();
     }
 
