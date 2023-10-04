@@ -24,9 +24,9 @@ MonoBehaviour:
     RunSpeed: 8
     WalkSpeed: 4.5
     CrouchSpeed: 5
-    IsGrounded: 0
+    IsGrounded: 1
     MaxSlopeAngle: 31
-    VaultSpeed: 0.165
+    VaultSpeed: 0.2
     CoyoteTime: 3.2
     AirMultiplier: 0.4
     JumpForce: 14
@@ -39,6 +39,5 @@ MonoBehaviour:
     Collider: {fileID: 0}
     RB: {fileID: 0}
     ExitingSlope: 1
-    CanDoubleJump: 1
-    IsCrouching: 0
-    IsWalking: 0
+    LerpPos: {x: -1.7248138, y: -0.45033878, z: 16.68284}
+    IsDoubleJumpUnlocked: 1

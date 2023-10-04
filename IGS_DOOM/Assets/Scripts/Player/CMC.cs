@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Security.Cryptography;
+﻿using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Player
@@ -19,7 +18,6 @@ namespace Player
         
         // can initialize from constructor
         private float playerHeight;
-        private float playerHalfHeight;
         private float playerRadius;
         private float startYScale;
 
@@ -33,7 +31,7 @@ namespace Player
         // PlayerMovement variables (changable)
 
         private float coyoteTime = 3.2f;
-        private float crouchYScale = .5f;
+
 
         public CMC(PlayerData _pData)
         {
@@ -49,8 +47,6 @@ namespace Player
         {
             playerRadius = pMoveData.Collider.radius;
             playerHeight = pMoveData.Collider.height;
-            playerHalfHeight = playerHeight / 2;
-            startYScale = pMoveData.pTransform.localScale.y;
 
             pMoveData.StepUpMax.position = new(pMoveData.StepUpMax.position.x, pMoveData.StepHeight, 
                 pMoveData.StepUpMax.position.z);
@@ -59,69 +55,45 @@ namespace Player
         
         public void Update()
         {
-            // Grounded check
-            // done with CheckCapsule because raycast was very buggy on a little uneven terrain
+            pMoveData.IsGrounded = GroundCheck();
+            
+            // clamp the speed before applying it to the player
+            SpeedControl();
+        }
+        private void FixedUpdate()
+        {
+            if (!OnSlope())
+            {
+                StepUp();
+            }
+        }
+
+        private bool GroundCheck()
+        {
             var bounds = pMoveData.Collider.bounds;
             Vector3 groundStart = bounds.center;
             Vector3 groundEnd = new (bounds.center.x, bounds.min.y, bounds.center.z);
-            pMoveData.IsGrounded = Physics.CheckCapsule(groundStart, groundEnd, playerRadius, pData.GroundLayer);
-            Debug.Log(isGrounded);
-            // clamp the speed before applying it to the player
-            SpeedControl();
-            
-            // Update the state controller
-
-            if (pMoveData.IsGrounded) 
+            if (Physics.CheckCapsule(groundStart, groundEnd, playerRadius, pData.GroundLayer))
             {
+                // Set Grounded variables
                 pMoveData.RB.drag = pMoveData.GroundDrag;
                 //exitingSlope = false;
                 isReadyToJump = true;
                 coyoteTimeCounter = coyoteTime;
+                return true;
             }
-            else
-            {
-                coyoteTimeCounter -= Time.deltaTime;
-                pMoveData.RB.drag = pMoveData.AirDrag;
-            }
-        }
-
-        private void FixedUpdate()
-        {
-            StepUp();
-        }
-        
-        public void Crouch()
-        {
-            currentMoveSpeed = pMoveData.CrouchSpeed;
             
-            var localScale = pMoveData.pTransform.localScale;
-            localScale = new(localScale.x, crouchYScale, localScale.z);
-            pMoveData.pTransform.localScale = localScale;
-
-            // LERP THE SCALE FOR SMOOTHER CROUCH << MAYBE???
-            pMoveData.RB.AddForce(Vector3.down * 2.5f, ForceMode.Impulse);
-        }
-
-        public void UnCrouch()
-        {
-            // Need to check if you can Uncrouch, currently if you crouch under a object you will clip into its
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            currentMoveSpeed = pMoveData.RunSpeed;
+            // Set InAir variables
+            coyoteTimeCounter -= Time.deltaTime;
+            pMoveData.RB.drag = pMoveData.AirDrag;
             
-            var localScale = pMoveData.pTransform.localScale;
-            localScale = new(localScale.x, startYScale, localScale.z);
-            pMoveData.pTransform.localScale = localScale;
+            return false;
         }
 
-        public void Walk()
-        {
-            currentMoveSpeed = pMoveData.WalkSpeed;
-        }
         
-        public void Run()
-        {
-            currentMoveSpeed = pMoveData.RunSpeed;
-        }
+        public void Run() { currentMoveSpeed = pMoveData.RunSpeed; }
+        public void Walk() { currentMoveSpeed = pMoveData.WalkSpeed; }
+        public void Crouch() { currentMoveSpeed = pMoveData.CrouchSpeed; }
         
         public void Jump()
         {
@@ -148,77 +120,39 @@ namespace Player
                 coyoteTimeCounter = 0f;
             }*/
         }
-
-        private void ResetJump()
-        {
-            if (pMoveData.IsGrounded)
-            {
-                pMoveData.ExitingSlope = false;
-                isReadyToJump = true;
-                pMoveData.IsDoubleJumpUnlocked = false;
-            }
-        }
-
-        private RaycastHit capsuleHit;
+        
         public bool CanLedgeGrab()
         {
-            RaycastHit wallHit;
             var bounds = pMoveData.Collider.bounds;
             Vector3 point1 = bounds.center;
-            // point 2 should be lower but not to the ground (we do a separate check for the ground (or if we can split up the complete capsule we can use that),
-            // that will be a check to step up certain height ledges)
-            // ^^ probs in separate function StepUp()
-            Vector3 point2 = new (bounds.center.x, bounds.center.y + playerHalfHeight, bounds.center.z);
+            Vector3 point2 = new (bounds.center.x, bounds.center.y + playerHeight/2, bounds.center.z);
+            // ^^ point 2 should be lower but not to the ground (There is a seperate check for stepup)
             
             // If there is a wall, raycast for ledgedetection
-            if (Physics.CapsuleCast(point1, point2, .1f, pMoveData.Orientation.forward, out wallHit, 
+            if (Physics.CapsuleCast(point1, point2, .1f, pMoveData.Orientation.forward, out var wallHit, 
                     1f, pData.GroundLayer))
             {
-                Debug.DrawRay(wallHit.point, Vector3.up, Color.blue);
-                
+                RaycastHit capsuleHit;
                 // NEED TO FIGURE OUT, CAPSULE CAST TO SEE IF THERE IS ENOUGH SPACE FOR THE ENTIRE PLAYER
                 //Vector3 capPos1 = wallHit.point + (orientation.forward * radius) + (Vector3.up * (.5f * playerHeight));
                 //Vector3 capPos2 = wallHit.point + (orientation.forward * radius) + (Vector3.down * (.5f * playerHeight));
                 //Debug.DrawLine(capPos1, capPos2, Color.green);
-                Vector3 downRay = wallHit.point + (pMoveData.Orientation.forward * playerRadius) + (Vector3.up * (.5f * playerHeight));
+                Vector3 downRay = wallHit.point + pMoveData.Orientation.forward * playerRadius + Vector3.up * (.5f * playerHeight);
                 
                 // check if there is a ledge, and enough room to stand onto the ledge
                 Debug.DrawRay(downRay, Vector3.down, Color.green);
                 if (Physics.Raycast(downRay,Vector3.down, out capsuleHit, playerHeight, pData.GroundLayer))  //Physics.CapsuleCast(capPos1, capPos2, radius, orientation.forward, out capsuleHit))
                 {
+                    pMoveData.LerpPos = capsuleHit.point;
                     return true;
                 }
             }
-
+            
             return false;
-        }
-        
-        public void LedgeGrab()
-        {
-            GameManager.Instance.StartCoroutine(LerpToVaultPos(capsuleHit.point, pMoveData.VaultSpeed));
-        }
-
-        private IEnumerator LerpToVaultPos(Vector3 _targetPos, float _duration)
-        {
-            float time = 0;
-            Vector3 startPos = pMoveData.pTransform.position;
-            Vector3 targetPos = new (_targetPos.x, _targetPos.y + playerHalfHeight, _targetPos.z);
-            while (time < _duration)
-            {
-                // move the player to the targetpos
-                pMoveData.RB.MovePosition(Vector3.Lerp(startPos, targetPos, time / _duration));
-                time += Time.deltaTime;
-                yield return null;
-            }
-            // Make sure the player is at the target pos at the end (lerp isn't exact)
-            pMoveData.RB.MovePosition(targetPos);
         }
 
         private void StepUp()
         {
-            //Debug.DrawRay(pMoveData.StepUpMin.position, 
-            //    pMoveData.Orientation.TransformDirection(Vector3.forward) * CalculateStepDistance(), Color.green);
-            
             // Make 3 rays, 1 straight and 2 at a 45 and -45 degree angle respectively
             Vector3[] directions =
             {
@@ -241,16 +175,11 @@ namespace Player
 
         private float CalculateStepDistance()
         {
-            // Calculate step distance based on the magnitude of the velocity
-            // The faster you go the further away it will cast
             return pMoveData.RB.velocity.magnitude / 10;
         }
 
         public void PlayerMove(Vector2 _moveInput)
         {
-            // Limit the speed from the player
-            SpeedControl();
-            
             // Get the direction to move in
             moveDirection = pMoveData.Orientation.forward * _moveInput.y + pMoveData.Orientation.right * _moveInput.x;
 
@@ -301,7 +230,7 @@ namespace Player
 
         private bool OnSlope()
         {
-            if (Physics.Raycast(pMoveData.pTransform.position, Vector3.down, out slopeHit, playerHalfHeight + .3f))
+            if (Physics.Raycast(pMoveData.pTransform.position, Vector3.down, out slopeHit, playerHeight/2 + .3f))
             {
                 float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
                 return angle < pMoveData.MaxSlopeAngle && angle != 0;

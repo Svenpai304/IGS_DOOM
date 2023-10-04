@@ -1,7 +1,3 @@
-using System.Diagnostics;
-using Player;
-using UnityEngine;
-
 namespace FSM
 {
     public delegate void StateEvent(IBaseState _state);
@@ -14,13 +10,13 @@ namespace FSM
     {
         //protected IStateData data;
 
-        public void OnStateEnter(IStateData _data);
+        public void OnStateEnter(IStateData _data) {}
 
-        public void OnStateUpdate(IStateData _data);
+        public void OnStateUpdate(IStateData _data) {}
 
-        public void OnStateFixedUpdate(IStateData _data);
+        public void OnStateFixedUpdate(IStateData _data) {}
 
-        public void OnStateExit(IStateData _data);
+        public void OnStateExit(IStateData _data) {}
 
         public StateEvent SwitchState { get; set; }
     }

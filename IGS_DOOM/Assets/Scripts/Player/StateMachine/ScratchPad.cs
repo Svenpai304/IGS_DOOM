@@ -23,9 +23,9 @@ namespace FSM
 
         public void LogElements()
         {
-            foreach (var VARIABLE in data)
+            foreach (var keyValuePair in data)
             {
-                Debug.Log(VARIABLE);
+                Debug.Log(keyValuePair);
             }
         }
     }
