@@ -11,9 +11,13 @@ namespace FSM
         public void OnStateEnter(IStateData _data)
         {
             var movData = _data.SharedData.Get<MoveVar>("Movement");
+            
+            // VERY VERY BADDD!!!! BUT IT WORKS
+            // Because you are grounded for a few frames after you leave the ground, this will only be true
+            // when you jump from a grounded position, so you can't double jump in the air. BUT THIS IS BAD!!!
+            // (this also acts as a very bad way to do coyote time lmao)
+            canJumpAgain = movData.IsGrounded;
             // Perform Jump
-            canJumpAgain = true;
-            isJumping = true;
             Jump(movData);
         }
         
@@ -29,7 +33,6 @@ namespace FSM
             {
                 // Perform Double Jump
                 canJumpAgain = false;
-                isJumping = true;
                 Jump(movData);
             }
             if (movData.IsGrounded && !isJumping)
@@ -58,6 +61,7 @@ namespace FSM
 
         private void Jump(MoveVar _jumpData)
         {
+            isJumping = true;
             _jumpData.ExitingSlope = true;
             _jumpData.RB.velocity = new (_jumpData.RB.velocity.x, 0f, _jumpData.RB.velocity.z);
             _jumpData.RB.AddForce(Vector3.up * _jumpData.JumpForce, ForceMode.Impulse);

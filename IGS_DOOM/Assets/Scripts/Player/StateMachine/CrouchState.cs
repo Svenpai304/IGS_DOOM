@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Player;
+using UnityEditor;
 
 namespace FSM
 {
@@ -23,10 +24,14 @@ namespace FSM
         public void OnStateUpdate(IStateData _data)
         {
             var inputData = _data.SharedData.Get<InputData>("input");
-            if (!inputData.IsCrouching || inputData.Jump.WasPerformedThisFrame())
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
+            
+            if (CanUnCrouch(movData))
             {
-                SwitchState(StateController.RunState);
-                Debug.Log("Switch to standing state");
+                if (!inputData.IsCrouching)
+                {
+                    SwitchState(StateController.RunState);
+                }
             }
         }
 
@@ -45,5 +50,14 @@ namespace FSM
         }
         
         public StateEvent SwitchState { get; set; }
+        
+        private bool CanUnCrouch(MoveVar _data)
+        {
+            if (Physics.BoxCast(_data.pTransform.position, _data.Collider.bounds.extents, Vector3.up))
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

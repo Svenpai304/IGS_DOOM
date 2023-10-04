@@ -8,7 +8,6 @@ namespace Player
     public struct InputData
     {
         public bool IsWalking;
-        public bool IsRunning;
         public bool IsCrouching;
         public InputAction Jump;
         public Vector2 MoveInput;
@@ -27,18 +26,12 @@ namespace Player
         public Transform WeaponTransform { get; set; }
         public Transform CamTransform { get; set; }
         private GameObject playerObject;
-        private Transform pTransform;
-        private CapsuleCollider pCollider;
         private PlayerCamera cam;
-        private bool isCrouchingPressed;
 
         private Vector2 mouseInput;
         private PlayerData playerData;
         private WeaponCarrier weapons;
-        public PlayerData PlayerData => playerData;
         private MoveVar pMoveData;
-        
-        private Vector2 moveInput;
 
         public Player()
         {
@@ -86,6 +79,7 @@ namespace Player
             input.Player.Movement.started += MoveInput;
             input.Player.Movement.performed += MoveInput;
             input.Player.Movement.canceled += MoveInput;
+            input.Player.Jump.started += JumpInput;
             inputData.Jump = input.Player.Jump;
             input.Player.Crouch.started += CrouchInput;
             input.Player.Walk.started += WalkInput;
@@ -97,6 +91,8 @@ namespace Player
             input.Player.AltFire.canceled += AltFireInput;
             input.Player.SwitchWeapons.started += SwitchWeaponsInput;
         }
+
+
 
         private void OnEnable()
         {
@@ -110,9 +106,10 @@ namespace Player
         
         private void Update()
         {
-            cam.UpdateCamera(mouseInput);
             SharedData.Set("input", inputData);
             SharedData.Set("Movement", pMoveData);
+            
+            cam.UpdateCamera(mouseInput);
             stateController.Update();
         }
 
@@ -122,12 +119,7 @@ namespace Player
         }
         
         #region Input
-
-            private void WalkInput(InputAction.CallbackContext callbackContext)
-            {
-                inputData.IsWalking = callbackContext.ReadValueAsButton();
-            }
-
+        
             private void MouseInput(InputAction.CallbackContext callbackContext)
             {
                 mouseInput = callbackContext.ReadValue<Vector2>();
@@ -138,6 +130,11 @@ namespace Player
                 inputData.MoveInput = callbackContext.ReadValue<Vector2>();
             }
 
+            private void WalkInput(InputAction.CallbackContext callbackContext)
+            {
+                inputData.IsWalking = callbackContext.ReadValueAsButton();
+            }
+            
             private void CrouchInput(InputAction.CallbackContext callbackContext)
             {
                 if (callbackContext.ReadValueAsButton())
@@ -146,6 +143,15 @@ namespace Player
                 }
             }
             
+            private void JumpInput(InputAction.CallbackContext callbackContext)
+            {
+                // Jump is an event so the actual jumping will be read from the states
+                // This function just ensures that when you jump whilst in the crouching state you stand up
+                if (callbackContext.ReadValueAsButton() && inputData.IsCrouching)
+                {
+                    inputData.IsCrouching = false;
+                }
+            }
             
             private bool isPreviousWeapon = true;
             private void SwitchWeaponsInput(InputAction.CallbackContext callbackContext)

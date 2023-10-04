@@ -8,7 +8,7 @@ namespace Player
         private MoveVar pMoveData;
         private PlayerData pData;
 
-        private RaycastHit slopeHit;
+
 
         // can initialize from constructor
         private float playerHeight;
@@ -43,14 +43,16 @@ namespace Player
             
             // clamp the speed before applying it to the player
             SpeedControl();
-        }
-        
-        private void FixedUpdate()
-        {
+            
             if (!OnSlope())
             {
                 StepUp();
             }
+        }
+        
+        private void FixedUpdate()
+        {
+
         }
 
         private bool GroundCheck()
@@ -111,24 +113,30 @@ namespace Player
             {
                 pMoveData.Orientation.TransformDirection(Vector3.forward),
                 pMoveData.Orientation.TransformDirection(1.5f, 0, 1),
-                pMoveData.Orientation.TransformDirection(-1.5f, 0, 1),
+                pMoveData.Orientation.TransformDirection(-1.5f, 0, 1)
             };
             
             foreach (var direction in directions)
             {
-                if (Physics.Raycast(pMoveData.StepUpMin.position, direction, CalculateStepDistance()))
+                RaycastHit isSlope;
+                if (Physics.Raycast(pMoveData.StepUpMin.position, direction, out isSlope,
+                        CalculateStepDistance(), pData.GroundLayer))
                 {
-                    if (Physics.Raycast(pMoveData.StepUpMin.position, direction, CalculateStepDistance()))
+                    // Just a check to make sure you go Smoothly on and off slopes
+                    if (Vector3.Angle(Vector3.up, isSlope.normal) < pMoveData.MaxSlopeAngle) { return; }
+                    
+                    if (!Physics.Raycast(pMoveData.StepUpMax.position, direction,  
+                            CalculateStepDistance(), pData.GroundLayer))
                     {
-                        pMoveData.RB.position -= new Vector3(0f, -pMoveData.StepSmooth, 0f);
+                        pMoveData.RB.position += new Vector3(0f, +pMoveData.StepSmooth, 0f);
                     }
-                }
+                } 
             }
         }
 
         private float CalculateStepDistance()
         {
-            return pMoveData.RB.velocity.magnitude / 10;
+            return pMoveData.RB.velocity.magnitude / 13;
         }
 
         public void PlayerMove(Vector2 _moveInput)
@@ -162,7 +170,6 @@ namespace Player
 
         private void SpeedControl()
         {
-            Debug.Log(OnSlope());
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
                 if (pMoveData.RB.velocity.magnitude > currentMoveSpeed)
@@ -187,6 +194,7 @@ namespace Player
             return Vector3.ProjectOnPlane(_moveDirection, slopeHit.normal).normalized;
         }
 
+        private RaycastHit slopeHit;
         private bool OnSlope()
         {
             if (Physics.Raycast(pMoveData.pTransform.position, Vector3.down, out slopeHit, playerHeight/2 + .3f))

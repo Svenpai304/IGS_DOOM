@@ -24,7 +24,6 @@ namespace FSM
         public StateController(IStateData _sharedData)
         {
             sharedData = _sharedData;
-            sharedData.SharedData.LogElements();
             ChangeState(RunState);
         }
         

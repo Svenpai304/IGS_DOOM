@@ -48,7 +48,6 @@ namespace Player
         
         [Header("Jumping")]
         public float                                 VaultSpeed = .165f;
-        public float                                 CoyoteTime = 3.2f;
         public float                                 AirMultiplier = .4f;
         public float                                 JumpForce = 18f;
         public float                                 StepHeight = .3f;
