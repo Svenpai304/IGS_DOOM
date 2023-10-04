@@ -13,13 +13,18 @@ namespace FSM
 
         public void OnStateUpdate(IStateData _data)
         {
-            if (!_data.SharedData.Get<InputData>("input").IsWalking)
+            var inputData = _data.SharedData.Get<InputData>("input");
+            if (!inputData.IsWalking)
             {
                 SwitchState(StateController.RunState);
             }
-            if (_data.SharedData.Get<InputData>("input").IsCrouching)
+            if (inputData.IsCrouching)
             {
                 SwitchState(StateController.CrouchState);
+            }
+            if (inputData.Jump.WasPressedThisFrame())
+            {
+                SwitchState(StateController.JumpState);
             }
         }
 

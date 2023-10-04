@@ -5,34 +5,19 @@ namespace Player
 {
     public class CMC
     {
-        private Vector3 moveDirection;
-        
         private MoveVar pMoveData;
         private PlayerData pData;
 
-        private bool isGrounded;
-
         private RaycastHit slopeHit;
-        
-        private float coyoteTimeCounter;
-        
+
         // can initialize from constructor
         private float playerHeight;
         private float playerRadius;
-        private float startYScale;
 
-        private float jumpCoolDown;
-        private bool isReadyToJump;
-
-        private bool isWalking;
-        
-        private float currentMoveSpeed = 7;
+        private float currentMoveSpeed;
         
         // PlayerMovement variables (changable)
-
-        private float coyoteTime = 3.2f;
-
-
+        
         public CMC(PlayerData _pData)
         {
             pData = _pData;
@@ -50,16 +35,16 @@ namespace Player
 
             pMoveData.StepUpMax.position = new(pMoveData.StepUpMax.position.x, pMoveData.StepHeight, 
                 pMoveData.StepUpMax.position.z);
-
         }
-        
-        public void Update()
+
+        private void Update()
         {
             pMoveData.IsGrounded = GroundCheck();
             
             // clamp the speed before applying it to the player
             SpeedControl();
         }
+        
         private void FixedUpdate()
         {
             if (!OnSlope())
@@ -77,49 +62,17 @@ namespace Player
             {
                 // Set Grounded variables
                 pMoveData.RB.drag = pMoveData.GroundDrag;
-                //exitingSlope = false;
-                isReadyToJump = true;
-                coyoteTimeCounter = coyoteTime;
                 return true;
             }
-            
             // Set InAir variables
-            coyoteTimeCounter -= Time.deltaTime;
             pMoveData.RB.drag = pMoveData.AirDrag;
             
             return false;
         }
-
         
         public void Run() { currentMoveSpeed = pMoveData.RunSpeed; }
         public void Walk() { currentMoveSpeed = pMoveData.WalkSpeed; }
         public void Crouch() { currentMoveSpeed = pMoveData.CrouchSpeed; }
-        
-        public void Jump()
-        {
-            if (coyoteTimeCounter > 0f)
-            {
-                if (pMoveData.IsGrounded || pMoveData.IsDoubleJumpUnlocked)
-                {
-                    isReadyToJump = false;
-                    //PerformJump();
-
-                    pMoveData.IsDoubleJumpUnlocked = !pMoveData.IsDoubleJumpUnlocked;
-        
-            // FIND A WAY TO RESET THE JUMP VARIABLES. WITH THAT ALSO THE DOUBLE JUMP AND COYOTETIME
-            // SLOPE JUMPING WILL BE ENABLED THIS WAY
-            // THIS DOESNT WORK BECAUSE THE SYSTEM ISNT RESETTING THE ISEXETING SLOPE VAR
-            // PROBS BEST WAY IS VIA THE STATE MACHINE
-            //ResetJump();
-                }
-            }
-
-            /*if (!callbackContext.ReadValueAsButton())
-            {
-                // THIS NEEDS TO MOVE I THINK :)
-                coyoteTimeCounter = 0f;
-            }*/
-        }
         
         public bool CanLedgeGrab()
         {
@@ -181,29 +134,35 @@ namespace Player
         public void PlayerMove(Vector2 _moveInput)
         {
             // Get the direction to move in
-            moveDirection = pMoveData.Orientation.forward * _moveInput.y + pMoveData.Orientation.right * _moveInput.x;
+            Vector3 moveDirection = pMoveData.Orientation.forward * _moveInput.y + pMoveData.Orientation.right * _moveInput.x;
 
             // Move Player
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
-                pMoveData.RB.AddForce(GetSlopeMovementDirection() * (currentMoveSpeed * 20f), ForceMode.Force);
+                pMoveData.RB.AddForce(GetSlopeMovementDirection(moveDirection) * (currentMoveSpeed * 20f), ForceMode.Force);
 
                 if (pMoveData.RB.velocity.y > 0)
                 {
                     pMoveData.RB.AddForce(Vector3.down * 100, ForceMode.Force);
                 }
             }
-            
+
             if (pMoveData.IsGrounded && !OnSlope())
+            {
                 pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f), ForceMode.Force);
+            }
             else if (!pMoveData.IsGrounded)
-                pMoveData.RB.AddForce(moveDirection.normalized * (currentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
+            {
+                pMoveData.RB.AddForce(moveDirection.normalized * 
+                                      (currentMoveSpeed * 10f * pMoveData.AirMultiplier), ForceMode.Force);
+            }
 
             pMoveData.RB.useGravity = !OnSlope();
         }
 
         private void SpeedControl()
         {
+            Debug.Log(OnSlope());
             if (OnSlope() && !pMoveData.ExitingSlope)
             {
                 if (pMoveData.RB.velocity.magnitude > currentMoveSpeed)
@@ -223,9 +182,9 @@ namespace Player
             }
         }
         
-        private Vector3 GetSlopeMovementDirection()
+        private Vector3 GetSlopeMovementDirection(Vector3 _moveDirection)
         {
-            return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+            return Vector3.ProjectOnPlane(_moveDirection, slopeHit.normal).normalized;
         }
 
         private bool OnSlope()

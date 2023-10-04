@@ -51,6 +51,7 @@ namespace FSM
         public void OnStateExit(IStateData _data)
         {
             canJumpAgain = true;
+            _data.SharedData.Get<MoveVar>("Movement").ExitingSlope = false;
         }
 
         public StateEvent SwitchState { get; set; }
