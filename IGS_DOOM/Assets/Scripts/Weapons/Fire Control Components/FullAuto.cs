@@ -6,6 +6,7 @@ using UnityEngine;
 public class FullAuto : FireControlComponent
 {
     [SerializeField] private float interval;
+    [SerializeField] private float spread;
 
     private bool isAutoActive;
     private float intervalTimer;
@@ -37,17 +38,13 @@ public class FullAuto : FireControlComponent
 
         if (intervalTimer == 0 && isAutoActive)
         {
-            fireBehaviour.ActivateFireComponents(weapon);
+            fireBehaviour.ActivateFireComponents(weapon, WeaponUtil.AddSpreadToVector3(weapon.Data.Owner.CamTransform.forward, spread));
             intervalTimer = interval;
         }
     }
 
     private void StartAuto(Weapon _weapon)
     {
-        if(intervalTimer == 0)
-        {
-            intervalTimer = interval;
-        }
         isAutoActive = true;
     }
 

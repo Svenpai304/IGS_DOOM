@@ -15,17 +15,13 @@ MonoBehaviour:
   data:
     MaxAmmo: 32
     Ammo: 0
-    CurrentMod: 0
-    Unlocked: 0
-    ModsUnlocked: 
-    Mod1Upgrade1Level: 0
-    Mod1Upgrade2Level: 0
-    Mod1Upgrade3Level: 0
-    Mod1MasteryUnlocked: 0
-    Mod2Upgrade1Level: 0
-    Mod2Upgrade2Level: 0
-    Mod2Upgrade3Level: 0
-    Mod2MasteryUnlocked: 0
+    CurrentMod: 2
+    Unlocked: 1
+    ModsUnlocked: 0101
+    Mod1UpgradeLevels: 000000000000000000000000
+    Mod2UpgradeLevels: 000000000000000000000000
   viewmodelPrefab: {fileID: 4990422170186922594, guid: a91bd2f3e53bc8c4a95975828da98d97, type: 3}
-  primaryFire: {fileID: 0}
-  altFires: []
+  primaryFire: {fileID: 11400000, guid: 69645c69291bf4d4fa12ba4a82bee7c0, type: 2}
+  altFires:
+  - {fileID: 11400000, guid: a647da5c7603f694697e0e47441504e9, type: 2}
+  - {fileID: 11400000, guid: ffdb59d68359a624290504abdbd4be4d, type: 2}

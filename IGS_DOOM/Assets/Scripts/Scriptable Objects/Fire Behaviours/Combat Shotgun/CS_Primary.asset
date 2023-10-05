@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d1165f05bffb3c4a99cc91d9e67731a, type: 3}
+  m_Name: CS_Primary
+  m_EditorClassIdentifier: 
+  fireControlComponent: {fileID: 11400000, guid: 18cd3441658367944a1626b6e9940be1, type: 2}
+  FireComponents:
+  - {fileID: 11400000, guid: aa801c7c3ff811b449097f1e00604473, type: 2}
+  lastFireDirections:
+  - {x: -0.72348005, y: -0.071783826, z: 0.7896979}
+  - {x: -0.6414315, y: -0.16910204, z: 0.9430163}
+  - {x: -0.5966421, y: -0.06849778, z: 0.8739201}
+  - {x: -0.58767766, y: -0.08728472, z: 0.7632247}
+  - {x: -0.56728697, y: -0.06711747, z: 0.69729286}
+  - {x: -0.5033196, y: -0.2686381, z: 0.81667644}
+  - {x: -0.6694778, y: -0.33319515, z: 0.8202617}
+  - {x: -0.5241246, y: -0.3038467, z: 0.7699019}
+  - {x: -0.6953691, y: -0.32647267, z: 0.82561636}
+  - {x: -0.5389794, y: -0.11279612, z: 0.86655754}
+  - {x: -0.79966575, y: -0.23718396, z: 0.7105434}
+  - {x: -0.74020797, y: -0.15411264, z: 0.8467712}
+  - {x: -0.60210186, y: -0.20378283, z: 0.62385803}
+  - {x: -0.68636584, y: -0.23909657, z: 0.7687821}
+  - {x: -0.64931065, y: -0.091441445, z: 0.6212305}

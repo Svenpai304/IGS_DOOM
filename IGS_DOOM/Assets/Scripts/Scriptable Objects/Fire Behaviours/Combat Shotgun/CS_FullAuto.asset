@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4cb5c0df744ed445bd655540bcc8a8a, type: 3}
-  m_Name: WeaponsData
+  m_Script: {fileID: 11500000, guid: f80eb79f3a2bfdf4c8c1b1318fc963d2, type: 3}
+  m_Name: CS_FullAuto
   m_EditorClassIdentifier: 
-  Weapons:
-  - {fileID: 11400000, guid: c92c0d428c5e75142a872d746f8b9349, type: 2}
-  - {fileID: 11400000, guid: 3fd34146ed5447a4fb7b4d0c6cde08dc, type: 2}
+  allUpgradeableValues: []
+  interval: 0.6
+  spread: 0

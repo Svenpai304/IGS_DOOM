@@ -26,6 +26,4 @@ public class WeaponData
 
     public int[] Mod1UpgradeLevels = new int[3];
     public int[] Mod2UpgradeLevels = new int[3];
-    public bool Mod1MasteryUnlocked;
-    public bool Mod2MasteryUnlocked;
 }

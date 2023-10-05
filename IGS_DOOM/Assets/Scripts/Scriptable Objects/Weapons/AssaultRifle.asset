@@ -16,16 +16,10 @@ MonoBehaviour:
     MaxAmmo: 0
     Ammo: 0
     CurrentMod: 0
-    Unlocked: 0
+    Unlocked: 1
     ModsUnlocked: 
-    Mod1Upgrade1Level: 0
-    Mod1Upgrade2Level: 0
-    Mod1Upgrade3Level: 0
-    Mod1MasteryUnlocked: 0
-    Mod2Upgrade1Level: 0
-    Mod2Upgrade2Level: 0
-    Mod2Upgrade3Level: 0
-    Mod2MasteryUnlocked: 0
+    Mod1UpgradeLevels: 000000000000000000000000
+    Mod2UpgradeLevels: 000000000000000000000000
   viewmodelPrefab: {fileID: 6398033356673988614, guid: 16e4a68367a32ce409621523a3e12696, type: 3}
   primaryFire: {fileID: 11400000, guid: 058b6847fc7acd94a858595592ea0c18, type: 2}
   altFires: []

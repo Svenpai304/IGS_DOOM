@@ -13,15 +13,11 @@ public class SingleHitscan : FireComponent
         allUpgradeableValues.Add(damage);
     }
 
-    public override void Fire(Weapon _weapon)
+    public override Vector3[] Fire(Weapon _weapon, Vector3 fireDirection)
     {
-        Transform cam = _weapon.Data.Owner.CamTransform;
-        RaycastHit hit;
-        if (!Physics.Raycast(cam.position, cam.forward, out hit, maxDistance, LayerMask.GetMask("Damageable"))) { return; }
-
-        if (EnemyManager.EnemyDict.ContainsKey(hit.collider.name))
-        {
-            EnemyManager.EnemyDict[hit.collider.name].TakeDamage((int)damage.GetValue());
-        }
+        WeaponUtil.FireHitscan(_weapon, fireDirection, damage);
+        Vector3[] dirArray = new Vector3[1];
+        dirArray[0] = fireDirection;
+        return dirArray;
     }
 }

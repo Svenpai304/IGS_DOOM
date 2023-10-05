@@ -1,13 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "FireBehaviour", menuName = "Fire Behaviour", order = 1)]
 public class FireBehaviour : ScriptableObject
 {
-    [SerializeField]private FireControlComponent fireControlComponent;
-    [SerializeField]public List<FireComponent> FireComponents = new List<FireComponent>();
+    [SerializeField] private FireControlComponent fireControlComponent;
+    [SerializeField] public List<FireComponent> FireComponents = new List<FireComponent>();
+    [HideInInspector] public Vector3[] lastFireDirections;
 
     public void OnSwitchIn(Weapon _weapon)
     {
@@ -19,11 +21,15 @@ public class FireBehaviour : ScriptableObject
         fireControlComponent.OnSwitchOut(_weapon, this);
     }
 
-    public void ActivateFireComponents(Weapon _weapon)
+    public void ActivateFireComponents(Weapon _weapon, Vector3 fireDirection)
     {
         foreach (var component in FireComponents)
         {
-            component.Fire(_weapon);
+            var dirs = component.Fire(_weapon, fireDirection);
+            if(dirs != null)
+            {
+                lastFireDirections = dirs;
+            }
         }
     }
 
@@ -31,15 +37,21 @@ public class FireBehaviour : ScriptableObject
     {
         List<UpgradeableValue> values = new List<UpgradeableValue>();
 
-        foreach(var value in fireControlComponent.allUpgradeableValues)
+        if (fireControlComponent != null)
         {
-            values.Add(value);
+            foreach (var value in fireControlComponent.allUpgradeableValues)
+            {
+                values.Add(value);
+            }
         }
         foreach (var component in FireComponents)
         {
-            foreach(var value in component.allUpgradeableValues)
+            if (component != null)
             {
-                values.Add(value);
+                foreach (var value in component.allUpgradeableValues)
+                {
+                    values.Add(value);
+                }
             }
         }
         return values;

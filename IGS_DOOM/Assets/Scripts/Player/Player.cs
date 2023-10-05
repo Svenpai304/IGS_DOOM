@@ -2,6 +2,7 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using FSM;
 using Weapons;
+using static UnityEngine.InputSystem.InputAction;
 
 namespace Player
 {
@@ -12,7 +13,7 @@ namespace Player
         public InputAction Jump;
         public Vector2 MoveInput;
     }
-    
+
     public class Player : IWeaponHolder, IStateData
     {
         public ScratchPad SharedData { get; }
@@ -21,7 +22,7 @@ namespace Player
         private CMC cmc;
 
         private InputData inputData;
-        
+
         //private PlayerData playerData;
         public Transform WeaponTransform { get; set; }
         public Transform CamTransform { get; set; }
@@ -51,7 +52,7 @@ namespace Player
             pMoveData.StepUpMin = playerObject.transform.Find("stepUpMin");
             pMoveData.StepUpMax = playerObject.transform.Find("stepUpMax");
             pMoveData.pTransform = playerObject.transform;
-            
+
             // Instantiate player objects
             var camObj = playerData.CreateCamera();
             cam = new PlayerCamera(playerObject, camObj);
@@ -62,8 +63,8 @@ namespace Player
 
             SharedData = new ScratchPad();
             SharedData.Set("cmc", cmc);
-            stateController = new StateController(this);  
-            
+            stateController = new StateController(this);
+
             pMoveData.RB.freezeRotation = true;
             pMoveData.RB.interpolation = RigidbodyInterpolation.Interpolate;
             pMoveData.RB.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -90,6 +91,7 @@ namespace Player
             input.Player.AltFire.started += AltFireInput;
             input.Player.AltFire.canceled += AltFireInput;
             input.Player.SwitchWeapons.started += SwitchWeaponsInput;
+            input.Player.WeaponMods.started += WeaponModsInput;
         }
 
 
@@ -103,12 +105,12 @@ namespace Player
         {
             input.Disable();
         }
-        
+
         private void Update()
         {
             SharedData.Set("input", inputData);
             SharedData.Set("Movement", pMoveData);
-            
+
             cam.UpdateCamera(mouseInput);
             stateController.Update();
         }
@@ -117,87 +119,89 @@ namespace Player
         {
             stateController.FixedUpdate();
         }
-        
+
         #region Input
-        
-            private void MouseInput(InputAction.CallbackContext callbackContext)
-            {
-                mouseInput = callbackContext.ReadValue<Vector2>();
-            }
 
-            private void MoveInput(InputAction.CallbackContext callbackContext)
-            {
-                inputData.MoveInput = callbackContext.ReadValue<Vector2>();
-            }
+        private void MouseInput(InputAction.CallbackContext callbackContext)
+        {
+            mouseInput = callbackContext.ReadValue<Vector2>();
+        }
 
-            private void WalkInput(InputAction.CallbackContext callbackContext)
-            {
-                inputData.IsWalking = callbackContext.ReadValueAsButton();
-            }
-            
-            private void CrouchInput(InputAction.CallbackContext callbackContext)
-            {
-                if (callbackContext.ReadValueAsButton())
-                {
-                    inputData.IsCrouching = !inputData.IsCrouching;
-                }
-            }
-            
-            private void JumpInput(InputAction.CallbackContext callbackContext)
-            {
-                // Jump is an event so the actual jumping will be read from the states
-                // This function just ensures that when you jump whilst in the crouching state you stand up
-                if (callbackContext.ReadValueAsButton() && inputData.IsCrouching)
-                {
-                    inputData.IsCrouching = false;
-                }
-            }
-            
-            private bool isPreviousWeapon = true;
-            private void SwitchWeaponsInput(InputAction.CallbackContext callbackContext)
-            {
-                // flip flop
-                if (callbackContext.ReadValueAsButton() && isPreviousWeapon)
-                {
-                    isPreviousWeapon = false;
-                    weapons.SwitchToNextWeapon();
-                }
-                else
-                {
-                    isPreviousWeapon = true;
-                    weapons.SwitchToPreviousWeapon();
-                }
-            }
+        private void MoveInput(InputAction.CallbackContext callbackContext)
+        {
+            inputData.MoveInput = callbackContext.ReadValue<Vector2>();
+        }
 
-            private void AltFireInput(InputAction.CallbackContext callbackContext)
-            {
-                if (callbackContext.ReadValueAsButton())
-                {
-                    weapons.CurrentWeapon.AltFirePressed();
-                }
-                else
-                {
-                    weapons.CurrentWeapon.AltFireReleased();
-                }
-            }
+        private void WalkInput(InputAction.CallbackContext callbackContext)
+        {
+            inputData.IsWalking = callbackContext.ReadValueAsButton();
+        }
 
-            private void FireInput(InputAction.CallbackContext callbackContext)
+        private void CrouchInput(InputAction.CallbackContext callbackContext)
+        {
+            if (callbackContext.ReadValueAsButton())
             {
-                RaycastHit hit;
-                if (callbackContext.ReadValueAsButton())
-                {
-
-                    if (Physics.Raycast(CamTransform.position,CamTransform.forward, out hit,100, LayerMask.GetMask("Damageable")))
-                    {
-                        Debug.Log(hit.collider.name);
-                    }
-                    weapons.CurrentWeapon.FirePressed();
-                }
-                else
-                {
-                    weapons.CurrentWeapon.FireReleased();
-                }
+                inputData.IsCrouching = !inputData.IsCrouching;
             }
+        }
+
+        private void JumpInput(InputAction.CallbackContext callbackContext)
+        {
+            // Jump is an event so the actual jumping will be read from the states
+            // This function just ensures that when you jump whilst in the crouching state you stand up
+            if (callbackContext.ReadValueAsButton() && inputData.IsCrouching)
+            {
+                inputData.IsCrouching = false;
+            }
+        }
+
+        private bool isPreviousWeapon = true;
+        private void SwitchWeaponsInput(InputAction.CallbackContext callbackContext)
+        {
+            // flip flop
+            if (callbackContext.ReadValueAsButton() && isPreviousWeapon)
+            {
+                isPreviousWeapon = false;
+                weapons.SwitchWeaponForward();
+            }
+            else
+            {
+                isPreviousWeapon = true;
+                weapons.SwitchToPreviousWeapon();
+            }
+        }
+
+        private void AltFireInput(InputAction.CallbackContext callbackContext)
+        {
+            if (callbackContext.ReadValueAsButton())
+            {
+                weapons.CurrentWeapon.AltFirePressed();
+            }
+            else
+            {
+                weapons.CurrentWeapon.AltFireReleased();
+            }
+        }
+
+        private void FireInput(InputAction.CallbackContext callbackContext)
+        {
+            if (callbackContext.ReadValueAsButton())
+            {
+                weapons.CurrentWeapon.FirePressed();
+            }
+            else
+            {
+                weapons.CurrentWeapon.FireReleased();
+            }
+        }
+
+        private void WeaponModsInput(InputAction.CallbackContext callbackContext)
+        {
+            if (callbackContext.ReadValueAsButton())
+            {
+                weapons.CurrentWeapon.SwitchMod();
+            }
+        }
 
         #endregion
     }

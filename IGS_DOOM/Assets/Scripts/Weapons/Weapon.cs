@@ -86,7 +86,17 @@ public class Weapon : ScriptableObject, IWeapon
         altFires[Data.CurrentMod - 1].OnSwitchIn(this);
     }
 
-    private void CollectUpgradeableValues()
+    public void DisablePrimaryFire()
+    {
+        primaryFire.OnSwitchOut(this);
+    }
+
+    public void EnablePrimaryFire()
+    {
+        primaryFire.OnSwitchIn(this);
+    }
+
+    public void CollectUpgradeableValues()
     {
         for(int i = 0; i < altFires.Length; i++)
         {

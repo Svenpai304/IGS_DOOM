@@ -15,4 +15,5 @@ public interface IWeapon
     public void SwitchMod();
     public void OnSwitchIn();
     public void OnSwitchOut();
+    public void CollectUpgradeableValues();
 }

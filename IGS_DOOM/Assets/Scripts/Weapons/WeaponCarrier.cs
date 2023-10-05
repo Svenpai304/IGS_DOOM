@@ -23,6 +23,7 @@ public class WeaponCarrier
         {
             Weapons.Add(weaponsData.Weapons[i]);
             Weapons[i].Data.Owner = player;
+            Weapons[i].CollectUpgradeableValues();
         }
         SwitchWeapon(0);
     }
