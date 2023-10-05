@@ -1,57 +1,54 @@
-﻿using Player;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FSM
 {
-    // Hierarchical State machine
-    // I looked into Pushdown automata but this isnt really neceserry for this system
+    // State machine
+    // I looked into Pushdown Automata but this isn't really necessary for this system
     // https://github.com/TS696/PdStateMachine/tree/master << only real recourse i found (in unity)
     // For maybe a complexer system that needs state history it might be a better fit
+    // But DOOM 4 doesnt really have that complex of a movement system so you dont need to know the prev
+    // state or anything, so that's why I just went for a normal Finite State Machine
 
     public class StateController
     {
-        public BaseState currentState;
+        private IBaseState currentState;
+        private IStateData sharedData;
+        
+        // Initialize global state variables
+        public static WalkState WalkState = new();
+        public static RunState RunState = new ();
+        public static CrouchState CrouchState = new();
+        public static JumpState JumpState = new();
+        public static LedgeGrabState LedgeGrabState = new();
 
-        // State Definitions
-        public GroundedState GroundedState = new();
-        public WalkState WalkState = new();
-        public RunState RunState = new ();
-        public CrouchState CrouchState = new();
-        public JumpState JumpState = new();
-        
-        public InAirState InAirState = new();
-        public InAIrJumpState InAIrJumpState = new();
-        public LedgeGrabState LedgeGrabState = new();
-        
-        
-        private CharacterMovementComponent cmc;
-
-        public StateController(CharacterMovementComponent _cmc)
+        public StateController(IStateData _sharedData)
         {
-            cmc = _cmc;
-            ChangeState(GroundedState);
-            GameManager.GlobalUpdate += Update;
-            GameManager.GlobalFixedUpdate += FixedUpdate;
+            sharedData = _sharedData;
+            ChangeState(RunState);
         }
         
-        private void Update()
+        public void Update()
         {
-            Debug.Log(currentState);
-            currentState?.OnStateUpdate();
+            currentState?.OnStateUpdate(sharedData);
         }
 
-        private void FixedUpdate()
+        public void FixedUpdate()
         {
-            //player.PlayerMove();
-            currentState?.OnStateFixedUpdate();
+            currentState?.OnStateFixedUpdate(sharedData);
         }
 
-        public void ChangeState(BaseState _newState)
+        private void ChangeState(IBaseState _newState)
         {
-            currentState?.OnStateExit();
+            if (currentState != null)
+            {
+                currentState.OnStateExit(sharedData);
+                currentState.SwitchState -= ChangeState;
+            }
+            
+            _newState.OnStateEnter(sharedData);
+            _newState.SwitchState += ChangeState;
 
             currentState = _newState;
-            currentState.OnStateEnter(this, cmc);
         }
     }
 }

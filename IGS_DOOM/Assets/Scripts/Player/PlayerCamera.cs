@@ -9,7 +9,7 @@ namespace Player
         private GameObject player;
         private Transform camHolder;
 
-        private Vector2 sens = new (200, 200);
+        private Vector2 sens = new (100, 100);
         private Vector2 rotation;
 
         public PlayerCamera(GameObject _player, GameObject _camObj)

@@ -1,25 +1,63 @@
-﻿namespace FSM
+﻿using UnityEngine;
+using Player;
+using UnityEditor;
+
+namespace FSM
 {
-    public class CrouchState : GroundedState
+    public class CrouchState : IBaseState
     {
-        protected override void OnEnter()
+        private float startYScale;
+        public void OnStateEnter(IStateData _data)
         {
-            cmc.Crouch();
-        }
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
 
-        protected override void OnUpdate()
-        {
+            // Set the movement speed in the movement Component
+            _data.SharedData.Get<CMC>("cmc").Crouch();
+            startYScale = movData.pTransform.localScale.y;
             
+            var localScale = movData.pTransform.localScale;
+            localScale = new(localScale.x, movData.CrouchYScale, localScale.z);
+            movData.pTransform.localScale = localScale;
+            movData.RB.AddForce(Vector3.down * 2.5f, ForceMode.Impulse);
         }
 
-        protected override void OnFixedUpdate()
+        public void OnStateUpdate(IStateData _data)
         {
+            var inputData = _data.SharedData.Get<InputData>("input");
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
             
+            if (CanUnCrouch(movData))
+            {
+                if (!inputData.IsCrouching)
+                {
+                    SwitchState(StateController.RunState);
+                }
+            }
         }
 
-        protected override void OnExit()
+        public void OnStateFixedUpdate(IStateData _data)
         {
-            cmc.UnCrouch();
+            _data.SharedData.Get<CMC>("cmc").PlayerMove(_data.SharedData.Get<InputData>("input").MoveInput);
+        }
+
+        public void OnStateExit(IStateData _data)
+        {
+            var movData = _data.SharedData.Get<MoveVar>("Movement");
+            
+            var localScale = movData.pTransform.localScale;
+            localScale = new(localScale.x, startYScale, localScale.z);
+            movData.pTransform.localScale = localScale;
+        }
+        
+        public StateEvent SwitchState { get; set; }
+        
+        private bool CanUnCrouch(MoveVar _data)
+        {
+            if (Physics.BoxCast(_data.pTransform.position, _data.Collider.bounds.extents, Vector3.up))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
