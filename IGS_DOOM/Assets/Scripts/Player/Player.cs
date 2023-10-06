@@ -4,6 +4,11 @@ using UnityEngine;
 using FSM;
 using Weapons;
 
+//-----------------------------------------------------------------------------------
+// Player class is mainly used for handling the Input and a commonplace for variables
+// All the logic that the player needs is attached to this object/script
+//-----------------------------------------------------------------------------------
+
 namespace Player
 {
     public struct InputData

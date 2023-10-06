@@ -1,6 +1,11 @@
 using System;
 using UnityEngine;
 
+//-----------------------------------------------------------------------------------
+// Camera class, Handles all the camera input and translates this to the movement and
+// rotation of the camera, this is instantiated from the Player class
+//-----------------------------------------------------------------------------------
+
 namespace Player
 {
     public class PlayerCamera
