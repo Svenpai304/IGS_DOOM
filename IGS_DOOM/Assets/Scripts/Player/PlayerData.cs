@@ -47,23 +47,25 @@ namespace Player
         public float                               AirDrag              = 0.4f;
         public float                               GroundDrag           = 3f;
 
-        public float                               RunSpeed             = 7;
-        public float                               WalkSpeed            = 5;
-        public float                               CrouchSpeed          = 6;
+        public float                               RunSpeed             = 7f;
+        public float                               WalkSpeed            = 5f;
+        public float                               CrouchSpeed          = 6f;
         
         public float                               StepHeight           = 0.3f;
         public float                               StepSmooth           = 0.1f;
         
-        public float                               MaxSlopeAngle        = 31;
+        public float                               MaxSlopeAngle        = 31f;
         public float                               CrouchYScale         = 0.5f;
+
+        public float                               PickupRadius         = 5f;
         
         [Header("Jumping and Parkour")]
         public float                               JumpForce            = 18f;
         public float                               VaultSpeed           = 0.165f;
         
         public int                                 MeleeDmg             = 4;
-        public float                               MeleeDistance        = 4;
-        public float                               GloryKillDistance    = 4;
+        public float                               MeleeDistance        = 4f;
+        public float                               GloryKillDistance    = 4f;
         
         // Hidden vars Used for accessing public info but that isnt initialized by the user but by the system itself
         [HideInInspector] public Transform         Orientation;

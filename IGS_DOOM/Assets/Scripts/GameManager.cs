@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Player;
 using UnityEngine;
 
 public enum GameState
@@ -15,21 +16,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] private LayerMask damageableLayer;
 
     public static GameManager Instance { get; private set; }
-    public delegate void Action();
-    public static Action GlobalAwake;
-    public static Action GlobalStart;
-    public static Action GlobalUpdate;
-    public static Action GlobalFixedUpdate;
-    public static Action GlobalOnEnable;
-    public static Action GlobalOnDisable;
-    
+    public delegate void  Action();
+    public static Action  GlobalAwake;
+    public static Action  GlobalStart;
+    public static Action  GlobalUpdate;
+    public static Action  GlobalFixedUpdate;
+    public static Action  GlobalOnEnable;
+    public static Action  GlobalOnDisable;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(this); }
         else { Instance = this; }
 
         _ = new EnemyManager(damageableLayer);
-        var a = new Player.Player();
+        _ = new Player.Player();
         GlobalAwake?.Invoke();
     }
 

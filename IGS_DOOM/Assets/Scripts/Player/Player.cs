@@ -19,13 +19,13 @@ namespace Player
         public Vector2      MoveInput;
     }
 
-    public class Player : IWeaponHolder, IStateData
+    public class Player : HSA_Component, IWeaponHolder, IStateData, IObserver
     {
         private StateController    stateController;
         private InputActions       input;
         private InputData          inputData;
-
         private CMC                cmc;
+        private PickupManager      pickupManager;
         
         private GameObject         playerObject;
         private PlayerCamera       cam;
@@ -34,6 +34,10 @@ namespace Player
         private PlayerData         playerData;
         private WeaponCarrier      weapons;
         private MoveVar            pMoveData;
+        
+        public float               Health;
+        public float               Shield;
+        public float               Ammo;
         
         public  Transform          CamTransform { get; set; }
         public  Transform          WeaponTransform { get; set; }
@@ -70,6 +74,8 @@ namespace Player
             SharedData.Set("cmc", cmc);
             stateController = new StateController(this);
 
+            pickupManager = new PickupManager();
+            
             pMoveData.RB.freezeRotation = true;
             pMoveData.RB.interpolation = RigidbodyInterpolation.Interpolate;
             pMoveData.RB.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -101,8 +107,7 @@ namespace Player
             input.Player.WeaponMods.started += WeaponModsInput;
             input.Player.Melee.started += MeleeInput;
         }
-        
-        
+
         private void OnEnable()
         {
             input.Enable();
@@ -120,11 +125,22 @@ namespace Player
 
             cam.UpdateCamera(mouseInput);
             stateController.Update();
+
+            RaycastHit pickupHit;
+            if (Physics.SphereCast(pMoveData.pTransform.position, pMoveData.PickupRadius, pMoveData.Orientation.forward, out pickupHit))
+            {
+                pickupManager.CollectPickup(pickupHit.collider.name);
+            }
         }
 
         private void FixedUpdate()
         {
             stateController.FixedUpdate();
+        }
+
+        public void OnNotify()
+        {
+            Debug.Log("PLAYER PICKED UP");
         }
 
         #region Input
