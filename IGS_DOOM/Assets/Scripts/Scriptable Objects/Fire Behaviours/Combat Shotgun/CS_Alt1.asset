@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: CS_Alt1
   m_EditorClassIdentifier: 
   fireControlComponent: {fileID: 11400000, guid: 3c15cbe0f9aee31408665ed5eff85af2, type: 2}
-  FireComponents: []
+  FireComponents:
+  - {fileID: 11400000, guid: bb5777c02fd6cd444b83bb31ea14511f, type: 2}
   lastFireDirections: []

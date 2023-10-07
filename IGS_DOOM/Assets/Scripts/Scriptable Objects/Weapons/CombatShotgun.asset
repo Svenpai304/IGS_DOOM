@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data:
     MaxAmmo: 32
-    Ammo: 0
-    CurrentMod: 2
+    Ammo: 32
+    CurrentMod: 1
     Unlocked: 1
     ModsUnlocked: 0101
     Mod1UpgradeLevels: 000000000000000000000000

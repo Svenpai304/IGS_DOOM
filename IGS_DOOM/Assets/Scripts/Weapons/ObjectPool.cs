@@ -12,7 +12,6 @@ public class ObjectPool<T> where T : IPoolable
     public ObjectPool(int _maxCapacity) 
     {
         maxCapacity = _maxCapacity;
-        Debug.Log(maxCapacity);
     }
 
     public T RequestObject()
