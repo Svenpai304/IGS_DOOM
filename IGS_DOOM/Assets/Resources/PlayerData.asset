@@ -12,11 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 602ea1f1b2e68b64eae2bc904c84126b, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  Player: {fileID: 6400789772574451950, guid: a2a3b158321568a4996d8592cadbb9ec, type: 3}
-  GroundLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  Camera: {fileID: 6213602980868173989, guid: 90dcfea5972c85449853aa2d4ade2143, type: 3}
+  player: {fileID: 6400789772574451950, guid: a2a3b158321568a4996d8592cadbb9ec, type: 3}
+  camera: {fileID: 6213602980868173989, guid: 90dcfea5972c85449853aa2d4ade2143, type: 3}
   pMoveData:
     AirDrag: 0
     GroundDrag: 5
@@ -37,6 +34,9 @@ MonoBehaviour:
     Collider: {fileID: 0}
     RB: {fileID: 0}
     ExitingSlope: 0
-    LerpPos: {x: 3.0604649, y: -2.325698, z: 21.059315}
+    LerpPos: {x: -3.862166, y: -1.9403389, z: 20.419851}
     IsDoubleJumpUnlocked: 1
     IsGrounded: 1
+  GroundLayer:
+    serializedVersion: 2
+    m_Bits: 256

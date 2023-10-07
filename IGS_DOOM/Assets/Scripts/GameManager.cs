@@ -3,6 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum GameState
+{
+    gameStart,
+    gameUpdate,
+    gameEnd
+}
+
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private LayerMask damageableLayer;
@@ -15,7 +22,7 @@ public class GameManager : MonoBehaviour
     public static Action GlobalFixedUpdate;
     public static Action GlobalOnEnable;
     public static Action GlobalOnDisable;
-
+    
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(this); }

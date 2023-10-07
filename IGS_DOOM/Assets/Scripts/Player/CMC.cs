@@ -1,6 +1,13 @@
 ﻿using Unity.VisualScripting;
 using UnityEngine;
 
+//-----------------------------------------------------------------------------------
+// CharacterMovementComponent, This handles all the Generic movement logic that cant
+// be handled in the states themselves. Here you can find the generic Move function
+// and the functions that get referenced when certain logic defines behaviour only
+// accessible through here like setting the movement speed
+//-----------------------------------------------------------------------------------
+
 namespace Player
 {
     public class CMC
