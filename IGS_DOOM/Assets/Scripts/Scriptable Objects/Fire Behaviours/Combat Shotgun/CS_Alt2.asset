@@ -15,6 +15,7 @@ MonoBehaviour:
   fireControlComponent: {fileID: 11400000, guid: 228dd421cb3904d4f808e40025db4a7d, type: 2}
   FireComponents:
   - {fileID: 11400000, guid: 36d17c4528645aa4d9dc179a35ad82e7, type: 2}
+  - {fileID: 11400000, guid: 1b6d7ff0195cda54299686045ae826df, type: 2}
   lastFireDirections:
   - {x: -0.6725194, y: -0.17259355, z: 0.7756565}
   - {x: -0.5645854, y: -0.2093618, z: 0.7798923}

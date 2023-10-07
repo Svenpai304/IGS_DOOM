@@ -25,7 +25,7 @@ public class FireBehaviour : ScriptableObject
     {
         foreach (var component in FireComponents)
         {
-            var dirs = component.Fire(_weapon, fireDirection);
+            var dirs = component.Fire(_weapon, this, fireDirection);
             if(dirs != null)
             {
                 lastFireDirections = dirs;

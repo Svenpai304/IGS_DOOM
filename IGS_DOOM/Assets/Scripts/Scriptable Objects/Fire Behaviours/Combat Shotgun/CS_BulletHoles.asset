@@ -9,18 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1bb2982311dbd8f42a9451f3a6abfad7, type: 3}
-  m_Name: CS_AltSpread
+  m_Script: {fileID: 11500000, guid: 8db53c4bb606b724f98bc06916c535d8, type: 3}
+  m_Name: CS_BulletHoles
   m_EditorClassIdentifier: 
-  allUpgradeableValues:
-  - IsUpgradeable: 0
-    UpgradeIndex: 0
-    values: []
-  ammoCost: 1
-  damage:
-    IsUpgradeable: 0
-    UpgradeIndex: 0
-    values:
-    - 1
-  count: 15
-  spread: 0.07
+  allUpgradeableValues: []
+  ammoCost: 0
+  decalPrefab: {fileID: 3128171394820875547, guid: 65e3e36593b86f747b285ab5a225ad8b, type: 3}
+  maxAmount: 100
