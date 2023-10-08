@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad38e15d6634cf1acfa397ec996a9f5, type: 3}
   m_Name: health
   m_EditorClassIdentifier: 
-  obj: {fileID: 3380941692193327119, guid: 15316459996789d48b3e77e3f3505d9a, type: 3}
+  obj: {fileID: 9117365086754142567, guid: 18b70f8029841874e9367dbd67d27fb0, type: 3}
   type: 0
   amount: 10
