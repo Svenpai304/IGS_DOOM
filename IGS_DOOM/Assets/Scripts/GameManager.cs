@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Player;
 using Player.Pickups;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,6 +23,7 @@ public class GameManager : MonoBehaviour
     public GameState State;
     public static event Action<GameState> OnGameStateStateChanged;
     public GameObject menu;
+    public GameObject end;
     public delegate void  Action();
     public static Action  GlobalAwake;
     public static Action  GlobalStart;
@@ -78,6 +80,17 @@ public class GameManager : MonoBehaviour
         GlobalFixedUpdate?.Invoke();
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            UpdateGameState(GameState.gameEnd);
+        }
+    }
+
+    private EnemyManager enem;
+    private Player.Player play;
+    private PickupManager pick;
     public void UpdateGameState(GameState _newState)
     {
         State = _newState;
@@ -85,23 +98,37 @@ public class GameManager : MonoBehaviour
         switch (_newState)
         {
             case GameState.gameStart:
+                end.SetActive(false);
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 menu.SetActive(true);
                 break;
             case GameState.gameUpdate:
                 menu.SetActive(false);
-                _ = new EnemyManager(damageableLayer);
-                var play = new Player.Player();
-                var pick = new PickupManager(play);
+                enem = new EnemyManager(damageableLayer);
+                play = new Player.Player();
+                pick = new PickupManager(play);
                 break;
             case GameState.gameEnd:
+                StartCoroutine(EndGame());
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(_newState), _newState, null);
         }
 
         OnGameStateStateChanged?.Invoke(_newState);
+    }
+
+    private IEnumerator EndGame()
+    {
+        // Right here should be the logic to destroy <-- DOESNT WORK ON NON MONO BEHAVIOURSSS!!!!!
+        // You can make some functions or use the OnEnable or OnDisable functions and invoke them here
+        // And in the gameUpdate State. So instead of instantiating every time you start, you just teleport the player
+        // to the start and reset the enemyManager and pickupManager
+        end.SetActive(true);
+        menu.SetActive(true);
+        yield return new WaitForSeconds(5);
+        UpdateGameState(GameState.gameStart);
     }
     
     public void PlayGame()
