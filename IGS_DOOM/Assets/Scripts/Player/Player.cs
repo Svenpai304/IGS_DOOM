@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using Player.Pickups;
 using FSM;
 using Weapons;
 
@@ -45,7 +46,6 @@ namespace Player
 
         public Player()
         {
-            GameManager.GlobalAwake += Awake;
             GameManager.GlobalUpdate += Update;
             GameManager.GlobalFixedUpdate += FixedUpdate;
             GameManager.GlobalOnEnable += OnEnable;
@@ -74,15 +74,10 @@ namespace Player
             SharedData.Set("cmc", cmc);
             stateController = new StateController(this);
 
-            pickupManager = new PickupManager();
-            
             pMoveData.RB.freezeRotation = true;
             pMoveData.RB.interpolation = RigidbodyInterpolation.Interpolate;
             pMoveData.RB.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        }
-
-        private void Awake()
-        {
+            
             input = new InputActions();
 
             // Movement input
@@ -106,11 +101,12 @@ namespace Player
             input.Player.SwitchWeapons.started += SwitchWeaponsInput;
             input.Player.WeaponMods.started += WeaponModsInput;
             input.Player.Melee.started += MeleeInput;
+            input.Enable();
         }
 
         private void OnEnable()
         {
-            input.Enable();
+
         }
 
         private void OnDisable()
@@ -125,12 +121,6 @@ namespace Player
 
             cam.UpdateCamera(mouseInput);
             stateController.Update();
-
-            RaycastHit pickupHit;
-            if (Physics.SphereCast(pMoveData.pTransform.position, pMoveData.PickupRadius, pMoveData.Orientation.forward, out pickupHit))
-            {
-                pickupManager.CollectPickup(pickupHit.collider.name);
-            }
         }
 
         private void FixedUpdate()
@@ -138,12 +128,23 @@ namespace Player
             stateController.FixedUpdate();
         }
 
-        public void OnNotify()
+        public void OnNotify(Pickup _pickup)
         {
-            Debug.Log("PLAYER PICKED UP");
+            switch (_pickup.Type)
+            {
+                case PickupType.Health:
+                    Debug.Log(_pickup.Amount + " Health picked up");
+                    break;
+                case PickupType.Shield:
+                    Debug.Log(_pickup.Amount + " Shield picked up");
+                    break;
+                case PickupType.Ammo:
+                    Debug.Log(_pickup.Amount + " Ammo picked up");
+                    break;
+            }
         }
 
-        #region Input
+        #region Input 
 
             private void MouseInput(InputAction.CallbackContext callbackContext)
             {

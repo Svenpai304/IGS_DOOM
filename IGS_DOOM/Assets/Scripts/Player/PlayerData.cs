@@ -12,14 +12,11 @@ namespace Player
     [CreateAssetMenu(fileName = "PlayerData", menuName = "Player", order = 2)]
     public class PlayerData : ScriptableObject
     {
-        [SerializeField]
-        private GameObject player;
-        [SerializeField]
-        private GameObject camera;
-        [SerializeField]
-        private MoveVar pMoveData;
+        [SerializeField] private GameObject         player;
+        [SerializeField] private GameObject         camera;
+        [SerializeField] private MoveVar            pMoveData;
         
-        public LayerMask GroundLayer;
+        public LayerMask                            GroundLayer;
         public MoveVar PMoveData => pMoveData;
         
         public GameObject InstantiatePlayer()

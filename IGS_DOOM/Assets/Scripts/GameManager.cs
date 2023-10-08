@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Player;
+using Player.Pickups;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState
 {
@@ -16,6 +18,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private LayerMask damageableLayer;
 
     public static GameManager Instance { get; private set; }
+
+    public GameState State;
+    public static event Action<GameState> OnGameStateStateChanged;
+    public GameObject menu;
     public delegate void  Action();
     public static Action  GlobalAwake;
     public static Action  GlobalStart;
@@ -29,9 +35,7 @@ public class GameManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(this); }
         else { Instance = this; }
 
-        _ = new EnemyManager(damageableLayer);
-        _ = new Player.Player();
-        GlobalAwake?.Invoke();
+        UpdateGameState(GameState.gameStart);
     }
 
     private WeaponCarrier weapons;
@@ -73,5 +77,35 @@ public class GameManager : MonoBehaviour
     {
         GlobalFixedUpdate?.Invoke();
     }
+
+    public void UpdateGameState(GameState _newState)
+    {
+        State = _newState;
+
+        switch (_newState)
+        {
+            case GameState.gameStart:
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                menu.SetActive(true);
+                break;
+            case GameState.gameUpdate:
+                menu.SetActive(false);
+                _ = new EnemyManager(damageableLayer);
+                var play = new Player.Player();
+                var pick = new PickupManager(play);
+                break;
+            case GameState.gameEnd:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(_newState), _newState, null);
+        }
+
+        OnGameStateStateChanged?.Invoke(_newState);
+    }
     
+    public void PlayGame()
+    {
+        UpdateGameState(GameState.gameUpdate);
+    }
 }

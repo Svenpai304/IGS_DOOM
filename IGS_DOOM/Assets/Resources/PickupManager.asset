@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82c75210ae014e1db6e6ec0bfd9ec993, type: 3}
+  m_Name: PickupManager
+  m_EditorClassIdentifier: 
+  healthPickupLoc: {fileID: 7680942590012730348, guid: 03715f0a6f1464a4699e14aaf4ab55eb, type: 3}
+  healthPickup: {fileID: 11400000, guid: b9175eb7e02b9f74e9ac8f442d0d5746, type: 2}
