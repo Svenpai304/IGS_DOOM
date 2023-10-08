@@ -17,11 +17,10 @@ public class Weapon : ScriptableObject, IWeapon
     [SerializeField] public FireBehaviour primaryFire;
     [SerializeField] public FireBehaviour[] altFires;
 
-    public delegate void WeaponAction(Weapon _weapon);
-    public WeaponAction OnFirePressed;
-    public WeaponAction OnFireReleased;
-    public WeaponAction OnAltFirePressed;
-    public WeaponAction OnAltFireReleased;
+    public Action<Weapon> OnFirePressed;
+    public Action<Weapon> OnFireReleased;
+    public Action<Weapon> OnAltFirePressed;
+    public Action<Weapon> OnAltFireReleased;
 
     public void FirePressed()
     {

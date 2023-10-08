@@ -22,7 +22,7 @@ public class GrenadeController
         if (projectile != null)
         {
             Debug.DrawLine(rbTransform.position, rbTransform.position + new Vector3(data.hitRadius, 0, 0), Color.green, 0.1f);
-            if (Physics.CheckSphere(rbTransform.position, data.hitRadius, LayerMask.GetMask("Damageable")))
+            if (Physics.CheckSphere(rbTransform.position, data.hitRadius, data.hitMask))
             {
                 Debug.Log("Exploding");
                 Explode();
@@ -30,7 +30,7 @@ public class GrenadeController
         }
         else
         {
-            data.explodeEffectDuration -= Time.deltaTime;
+            data.explodeEffectDuration -= Time.fixedDeltaTime;
             if(data.explodeEffectDuration < 0 && explodeEffect != null)
             {
                 Object.Destroy(explodeEffect);

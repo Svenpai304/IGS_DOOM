@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: CS_FullAuto
   m_EditorClassIdentifier: 
   allUpgradeableValues: []
-  interval: 0.6
+  interval: 10
   spread: 0
