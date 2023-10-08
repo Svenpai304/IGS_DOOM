@@ -88,11 +88,13 @@ public class Weapon : ScriptableObject, IWeapon
 
     public void DisablePrimaryFire()
     {
+        Debug.Log("Primary fire disabled");
         primaryFire.OnSwitchOut(this);
     }
 
     public void EnablePrimaryFire()
     {
+        Debug.Log("Primary fire re-enabled");
         primaryFire.OnSwitchIn(this);
     }
 

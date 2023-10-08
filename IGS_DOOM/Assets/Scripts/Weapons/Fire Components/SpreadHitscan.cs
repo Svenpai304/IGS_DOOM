@@ -14,9 +14,10 @@ public class SpreadHitscan : FireComponent
         allUpgradeableValues.Add(damage);
     }
 
-    public override Vector3[] Fire(Weapon _weapon, Vector3 fireDirection)
+    public override Vector3[] Fire(Weapon _weapon, FireBehaviour fireBehaviour, Vector3 fireDirection)
     {
-        Debug.Log("Spread fired");
+        _weapon.Data.Ammo -= ammoCost;
+        _weapon.Data.Ammo = Mathf.Clamp(ammoCost, 0, _weapon.Data.MaxAmmo);
         Vector3[] dirs = new Vector3[count];
         for(int i = 0; i < count; i++)
         {

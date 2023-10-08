@@ -89,5 +89,16 @@ public class WeaponCarrier
         }
     }
 
+    public void SetWeaponUpgrade(int altIndex, int upgradeIndex, int level, int weaponIndex)
+    {
+        Weapons[weaponIndex].Data.UpgradeLevels[altIndex][upgradeIndex] = level;
+        Weapons[weaponIndex].CollectUpgradeableValues();
+    }
+
+    public void AddAmmo(int amount, int i)
+    {
+        Weapons[i].Data.Ammo += amount;
+        Weapons[i].Data.Ammo = Mathf.Clamp(Weapons[i].Data.Ammo, 0, Weapons[i].Data.MaxAmmo);
+    }
 
 }

@@ -23,9 +23,10 @@ public class FireBehaviour : ScriptableObject
 
     public void ActivateFireComponents(Weapon _weapon, Vector3 fireDirection)
     {
+        if(_weapon.Data.Ammo <= 0) { return; }
         foreach (var component in FireComponents)
         {
-            var dirs = component.Fire(_weapon, fireDirection);
+            var dirs = component.Fire(_weapon, this, fireDirection);
             if(dirs != null)
             {
                 lastFireDirections = dirs;

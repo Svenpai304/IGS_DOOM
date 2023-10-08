@@ -119,7 +119,7 @@ public class AltBurstFire : FireControlComponent
 
     private void FireBurst(Weapon _weapon)
     {
-        if (state == BurstStateEnum.Charging)
+        if (state == BurstStateEnum.Charging && currentBurstCount == maxBurstCount)
         {
             state = BurstStateEnum.Firing;
         }
