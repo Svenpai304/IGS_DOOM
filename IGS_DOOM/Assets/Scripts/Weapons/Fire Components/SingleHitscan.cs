@@ -15,8 +15,6 @@ public class SingleHitscan : FireComponent
 
     public override Vector3[] Fire(Weapon _weapon, FireBehaviour fireBehaviour, Vector3 fireDirection)
     {
-        _weapon.Data.Ammo -= ammoCost;
-        _weapon.Data.Ammo = Mathf.Clamp(ammoCost, 0, _weapon.Data.MaxAmmo);
         WeaponUtil.FireHitscan(_weapon, fireDirection, damage);
         Vector3[] dirArray = new Vector3[1];
         dirArray[0] = fireDirection;

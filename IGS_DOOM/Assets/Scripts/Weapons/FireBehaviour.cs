@@ -26,12 +26,16 @@ public class FireBehaviour : ScriptableObject
         if(_weapon.Data.Ammo <= 0) { return; }
         foreach (var component in FireComponents)
         {
+            _weapon.Data.Ammo -= component.ammoCost;
+            _weapon.Data.Ammo = Mathf.Clamp(_weapon.Data.Ammo, 0, _weapon.Data.MaxAmmo);
+
             var dirs = component.Fire(_weapon, this, fireDirection);
             if(dirs != null)
             {
                 lastFireDirections = dirs;
             }
         }
+        Debug.Log("Fired. Ammo remaining: " + _weapon.Data.Ammo);
     }
 
     public List<UpgradeableValue> GetUpgradeableValues()

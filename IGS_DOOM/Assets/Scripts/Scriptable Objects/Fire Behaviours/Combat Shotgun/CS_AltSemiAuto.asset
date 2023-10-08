@@ -21,7 +21,8 @@ MonoBehaviour:
     - 0
   rechargeTime:
     IsUpgradeable: 1
-    UpgradeIndex: 1
+    UpgradeIndex: 0
     values:
     - 0.7
     - 0.4
+  spread: 0

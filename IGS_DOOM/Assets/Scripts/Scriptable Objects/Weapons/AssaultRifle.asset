@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: AssaultRifle
   m_EditorClassIdentifier: 
   data:
-    MaxAmmo: 0
-    Ammo: 0
+    MaxAmmo: 120
+    Ammo: 98
     CurrentMod: 0
     Unlocked: 1
-    ModsUnlocked: 
+    ModsUnlocked: 0000
     Mod1UpgradeLevels: 000000000000000000000000
     Mod2UpgradeLevels: 000000000000000000000000
   viewmodelPrefab: {fileID: 6398033356673988614, guid: 16e4a68367a32ce409621523a3e12696, type: 3}

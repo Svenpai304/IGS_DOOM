@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f80eb79f3a2bfdf4c8c1b1318fc963d2, type: 3}
-  m_Name: CS_FullAuto
+  m_Script: {fileID: 11500000, guid: 8db53c4bb606b724f98bc06916c535d8, type: 3}
+  m_Name: AR_BulletHole
   m_EditorClassIdentifier: 
   allUpgradeableValues: []
-  interval: 0.6
-  spread: 0
+  ammoCost: 0
+  decalPrefab: {fileID: 3128171394820875547, guid: 65e3e36593b86f747b285ab5a225ad8b, type: 3}
+  maxAmount: 100

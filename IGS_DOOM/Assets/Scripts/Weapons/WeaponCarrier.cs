@@ -24,6 +24,7 @@ public class WeaponCarrier
             Weapons.Add(weaponsData.Weapons[i]);
             Weapons[i].Data.Owner = player;
             Weapons[i].CollectUpgradeableValues();
+            Weapons[i].Data.Ammo = Weapons[i].Data.MaxAmmo;
         }
         SwitchWeapon(0);
     }

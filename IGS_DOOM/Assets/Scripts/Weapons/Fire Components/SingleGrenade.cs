@@ -14,10 +14,7 @@ public class SingleGrenade : FireComponent
     [SerializeField] private float startOffset;
     public override Vector3[] Fire(Weapon _weapon, FireBehaviour fireBehaviour, Vector3 fireDirection)
     {
-        Debug.Log("Grenade launched");
-        _weapon.Data.Ammo -= ammoCost;
-        _weapon.Data.Ammo = Mathf.Clamp(ammoCost, 0, _weapon.Data.MaxAmmo);
-        Vector3 startPos = _weapon.Data.Owner.CamTransform.position + (startOffset * _weapon.Data.Owner.CamTransform.forward);
+        Debug.Log("Grenade launched");Vector3 startPos = _weapon.Data.Owner.CamTransform.position + (startOffset * _weapon.Data.Owner.CamTransform.forward);
         Vector3 fireForce = fireDirection * startForce;
 
         _ = new GrenadeController(Instantiate(grenadePrefab, startPos, _weapon.Data.Owner.CamTransform.rotation), fireForce, grenadeData);
