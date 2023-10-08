@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,6 @@ public static class WeaponUtil
 
     public static Vector3 AddSpreadToVector3(Vector3 startDir, float maxSpread)
     {
-        return startDir + Random.insideUnitSphere * maxSpread;
+        return startDir + UnityEngine.Random.insideUnitSphere * maxSpread;
     }
 }

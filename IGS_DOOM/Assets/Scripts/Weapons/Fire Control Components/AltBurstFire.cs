@@ -41,20 +41,24 @@ public class AltBurstFire : FireControlComponent
         _weapon.OnAltFirePressed -= EnterFireMode;
         _weapon.OnAltFireReleased -= ExitFireMode;
         GameManager.GlobalFixedUpdate -= FixedUpdate;
-        ExitFireMode(_weapon);
+        if (fireModeActive)
+        {
+            ExitFireMode(_weapon);
+        }
     }
 
     public void FixedUpdate()
     {
-        timer += Time.deltaTime;
+        timer += Time.fixedDeltaTime;
 
         switch (state)
         {
             case BurstStateEnum.Firing: FiringBehaviour(); break;
             case BurstStateEnum.Charging: ChargingBehaviour(); break;
             case BurstStateEnum.Resetting: ResettingBehaviour(); break;
+            case BurstStateEnum.Idle: GameManager.GlobalFixedUpdate -= FixedUpdate; break;
         }
-
+        Debug.Log(state);
     }
 
     private void FiringBehaviour()

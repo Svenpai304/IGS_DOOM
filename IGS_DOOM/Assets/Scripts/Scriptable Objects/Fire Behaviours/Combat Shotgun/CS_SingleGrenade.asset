@@ -17,6 +17,9 @@ MonoBehaviour:
   grenadePrefab: {fileID: 197418594198629328, guid: 1750fe6d01c3f8547b205846bf148f71, type: 3}
   grenadeData:
     explosionPrefab: {fileID: 6824637228493387716, guid: 51868fd5f942cb34188035410834bb43, type: 3}
+    hitMask:
+      serializedVersion: 2
+      m_Bits: 1280
     explodeEffectDuration: 0.1
     hitRadius: 0.4
     explodeRadius:

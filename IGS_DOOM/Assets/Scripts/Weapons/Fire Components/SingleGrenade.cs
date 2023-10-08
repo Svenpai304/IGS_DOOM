@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 [CreateAssetMenu]
@@ -30,6 +31,7 @@ public class SingleGrenade : FireComponent
     public struct GrenadeData
     {
         public GameObject explosionPrefab;
+        public LayerMask hitMask;
         public float explodeEffectDuration;
         public float hitRadius;
         public UpgradeableValue explodeRadius;

@@ -15,26 +15,29 @@ MonoBehaviour:
   player: {fileID: 6400789772574451950, guid: a2a3b158321568a4996d8592cadbb9ec, type: 3}
   camera: {fileID: 6213602980868173989, guid: 90dcfea5972c85449853aa2d4ade2143, type: 3}
   pMoveData:
+    AirMultiplier: 0.4
     AirDrag: 0
     GroundDrag: 5
-    CrouchYScale: 0.5
     RunSpeed: 8
     WalkSpeed: 4.5
     CrouchSpeed: 5
+    StepHeight: 1
+    StepSmooth: 0.05
     MaxSlopeAngle: 31
-    VaultSpeed: 0.2
-    AirMultiplier: 0.4
+    CrouchYScale: 0.5
     JumpForce: 14
-    StepHeight: 0.75
-    StepSmooth: 0.03
+    VaultSpeed: 0.2
+    MeleeDmg: 4
+    MeleeDistance: 4
+    GloryKillDistance: 4
     Orientation: {fileID: 0}
     pTransform: {fileID: 0}
     StepUpMin: {fileID: 0}
     StepUpMax: {fileID: 0}
     Collider: {fileID: 0}
     RB: {fileID: 0}
+    LerpPos: {x: -3.2378197, y: 0.3599893, z: 0.43815613}
     ExitingSlope: 0
-    LerpPos: {x: -3.862166, y: -1.9403389, z: 20.419851}
     IsDoubleJumpUnlocked: 1
     IsGrounded: 1
   GroundLayer:

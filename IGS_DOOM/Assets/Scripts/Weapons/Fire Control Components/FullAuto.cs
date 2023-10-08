@@ -18,9 +18,12 @@ public class FullAuto : FireControlComponent
     {
         _weapon.OnFirePressed += StartAuto;
         _weapon.OnFireReleased += StopAuto;
-        GameManager.GlobalUpdate += FixedUpdate;
+        GameManager.GlobalFixedUpdate += FixedUpdate;
+        Debug.Log("FA activated");
+
         weapon = _weapon;
         fireBehaviour = _fireBehaviour;
+        isAutoActive = false;
     }
 
     public override void OnSwitchOut(Weapon _weapon, FireBehaviour _fireBehaviour)
@@ -28,12 +31,15 @@ public class FullAuto : FireControlComponent
         _weapon.OnFirePressed -= StartAuto;
         _weapon.OnFireReleased -= StopAuto;
         GameManager.GlobalFixedUpdate -= FixedUpdate;
+        Debug.Log("FA deactivated");
+
         intervalTimer = 0;
+        isAutoActive = false;
     }
 
     private void FixedUpdate()
     {
-        intervalTimer -= Time.deltaTime;
+        intervalTimer -= Time.fixedDeltaTime;
         intervalTimer = Mathf.Clamp(intervalTimer, 0, interval);
 
         if (intervalTimer == 0 && isAutoActive)

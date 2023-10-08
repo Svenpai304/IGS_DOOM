@@ -21,6 +21,7 @@ public class AltSemiAuto : FireControlComponent
     {
         _weapon.OnAltFirePressed += EnterFireMode;
         _weapon.OnAltFireReleased += ExitFireMode;
+        GameManager.GlobalFixedUpdate += FixedUpdate;
         fireBehaviour = _fireBehaviour;
     }
 
@@ -28,33 +29,32 @@ public class AltSemiAuto : FireControlComponent
     {
         _weapon.OnAltFirePressed -= EnterFireMode;
         _weapon.OnAltFireReleased -= ExitFireMode;
-        ExitFireMode(_weapon);
+        GameManager.GlobalFixedUpdate -= FixedUpdate;
+        if (fireModeActive)
+        {
+            ExitFireMode(_weapon);
+        }
     }
 
     private void FixedUpdate()
     {
         Debug.Log(isLoaded);
-        timer += Time.deltaTime;
+        if(isLoaded) { return; }
+        timer += Time.fixedDeltaTime;
         if(isRecharging && timer > rechargeTime.GetValue())
         {
             isRecharging = false;
             timer = 0f;
         }
-        else if(!isLoaded && timer > loadTime.GetValue())
+        else if(!isRecharging && timer > loadTime.GetValue())
         {
             isLoaded = true;
             timer = 0f;
-        }
-        if(!isRecharging && !fireModeActive)
-        {
-            GameManager.GlobalFixedUpdate -= FixedUpdate;
         }
     }
 
     private void EnterFireMode(Weapon _weapon)
     {
-        Debug.Log("Entered alt fire");
-        GameManager.GlobalFixedUpdate += FixedUpdate;
         _weapon.DisablePrimaryFire();
         _weapon.OnFirePressed += Fire;
         fireModeActive = true;
@@ -75,6 +75,7 @@ public class AltSemiAuto : FireControlComponent
             fireBehaviour.ActivateFireComponents(_weapon, WeaponUtil.AddSpreadToVector3(_weapon.Data.Owner.CamTransform.forward, spread));
             isLoaded = false;
             isRecharging = true;
+            timer = 0;
         }
     }
 }
