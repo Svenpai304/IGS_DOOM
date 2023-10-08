@@ -2,6 +2,8 @@
 
 namespace Player.Pickups
 {
+    // General Pickup class, this gets created as a scripteble object and here you can choose what kind of pickup
+    // it is.
     [CreateAssetMenu(fileName = "Pickup", menuName = "Pickup", order = 2)]
     public class Pickup : ScriptableObject
     {

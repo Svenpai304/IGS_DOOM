@@ -53,7 +53,8 @@ namespace FSM
         
         private bool CanUnCrouch(MoveVar _data)
         {
-            if (Physics.BoxCast(_data.pTransform.position, _data.Collider.bounds.extents, Vector3.up))
+            if (Physics.BoxCast(_data.pTransform.position, _data.Collider.bounds.extents, Vector3.up, 
+                    _data.pTransform.rotation, 1, LayerMask.GetMask("Ground")))
             {
                 return false;
             }

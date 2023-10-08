@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace Player.Pickups
 {
-
+    // Works with observer pattern (this didnt really come out the way I would've liked. Because this would work better
+    // if I could enable OnTriggerEnter on the pickups, but because this isn't a mono behaviour i had some trouble
+    // implementing this system so that's why this doesnt work very good)
+    
     public class PickupManager
     {
         private static List<IObserver> observers = new ();
