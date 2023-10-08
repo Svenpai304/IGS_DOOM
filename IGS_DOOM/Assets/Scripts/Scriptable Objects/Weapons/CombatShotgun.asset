@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   data:
     MaxAmmo: 32
-    Ammo: 32
-    CurrentMod: 1
+    Ammo: 1
+    CurrentMod: 2
     Unlocked: 1
     ModsUnlocked: 0101
-    Mod1UpgradeLevels: 000000000000000000000000
-    Mod2UpgradeLevels: 000000000000000000000000
+    Mod1UpgradeLevels: 010000000000000001000000
+    Mod2UpgradeLevels: 010000000000000001000000
   viewmodelPrefab: {fileID: 4990422170186922594, guid: a91bd2f3e53bc8c4a95975828da98d97, type: 3}
   primaryFire: {fileID: 11400000, guid: 69645c69291bf4d4fa12ba4a82bee7c0, type: 2}
   altFires:

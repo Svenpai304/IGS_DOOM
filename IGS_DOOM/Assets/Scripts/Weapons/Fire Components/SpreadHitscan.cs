@@ -16,8 +16,6 @@ public class SpreadHitscan : FireComponent
 
     public override Vector3[] Fire(Weapon _weapon, FireBehaviour fireBehaviour, Vector3 fireDirection)
     {
-        _weapon.Data.Ammo -= ammoCost;
-        _weapon.Data.Ammo = Mathf.Clamp(ammoCost, 0, _weapon.Data.MaxAmmo);
         Vector3[] dirs = new Vector3[count];
         for(int i = 0; i < count; i++)
         {
