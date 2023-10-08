@@ -47,10 +47,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damageableLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1024
   State: 0
   menu: {fileID: 6257260226868204450}
-  end: {fileID: 0}
+  end: {fileID: 6134057925083809051}
 --- !u!1 &6134057925083809051
 GameObject:
   m_ObjectHideFlags: 0
