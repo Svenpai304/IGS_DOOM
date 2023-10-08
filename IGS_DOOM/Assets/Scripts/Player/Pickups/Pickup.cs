@@ -14,6 +14,11 @@ namespace Player.Pickups
         public GameObject                      Obj  => obj;
         public PickupType                      Type  => type;
         public int                             Amount => amount;
+
+        public GameObject GetObj(Transform _pos)
+        {
+            return Instantiate(obj, _pos);
+        }
         
     }
 

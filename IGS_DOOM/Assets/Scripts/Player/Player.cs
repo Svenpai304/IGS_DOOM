@@ -130,6 +130,8 @@ namespace Player
 
         public void OnNotify(Pickup _pickup)
         {
+            // For some bizar reason this function gets called Twice, this isn't on purpose but a side effect from
+            // hastily coding this system
             switch (_pickup.Type)
             {
                 case PickupType.Health:
