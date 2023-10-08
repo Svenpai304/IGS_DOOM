@@ -28,6 +28,6 @@ MonoBehaviour:
       values:
       - 2
       - 2.5
-    damage: 18
+    damage: 20
   startForce: 1500
   startOffset: 0.6

@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f80eb79f3a2bfdf4c8c1b1318fc963d2, type: 3}
   m_Name: AR_FullAuto
   m_EditorClassIdentifier: 
-  interval: 0.1
+  allUpgradeableValues: []
+  interval: 0.2
+  spread: 0.01

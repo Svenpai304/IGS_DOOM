@@ -21,6 +21,6 @@ MonoBehaviour:
     IsUpgradeable: 0
     UpgradeIndex: 0
     values:
-    - 1
+    - 2
   count: 15
-  spread: 0.2
+  spread: 0.15
