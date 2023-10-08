@@ -22,7 +22,7 @@ MonoBehaviour:
     WalkSpeed: 4.5
     CrouchSpeed: 5
     StepHeight: 0.75
-    StepSmooth: 0.03
+    StepSmooth: 0.075
     MaxSlopeAngle: 31
     CrouchYScale: 0.5
     PickupRadius: 10
@@ -37,7 +37,7 @@ MonoBehaviour:
     StepUpMax: {fileID: 0}
     Collider: {fileID: 0}
     RB: {fileID: 0}
-    LerpPos: {x: -1.5327232, y: -1.9403389, z: 16.642435}
+    LerpPos: {x: -49.918377, y: 6.119989, z: -0.51771545}
     ExitingSlope: 0
     IsDoubleJumpUnlocked: 1
     IsGrounded: 1
